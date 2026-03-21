@@ -197,8 +197,8 @@ export function ProfileFeedLayout({ profileUserId }: ProfileFeedLayoutProps) {
               </div>
 
               {canManageProfile ? (
-                <div className="mt-6 flex flex-col gap-4 rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.06] via-white to-white p-5 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="min-w-0">
+                <div className="mt-6 flex w-full min-w-0 flex-col gap-4 overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.06] via-white to-white p-5 md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-x-4 md:gap-y-3">
+                  <div className="min-w-0 w-full md:flex-1 md:basis-0">
                     <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">
                       Nova postagem
                     </p>
@@ -207,16 +207,16 @@ export function ProfileFeedLayout({ profileUserId }: ProfileFeedLayoutProps) {
                       (demonstração local).
                     </p>
                   </div>
-                  <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+                  <div className="flex w-full min-w-0 shrink-0 flex-col gap-2 md:w-auto md:max-w-full md:flex-row md:flex-wrap md:justify-end">
                     <Link
                       to={userProfileEditPath(sessionUserId)}
-                      className="inline-flex shrink-0 items-center justify-center rounded-full border border-primary/35 bg-white px-5 py-2.5 text-center text-sm font-medium text-primary shadow-sm transition hover:bg-primary/5 active:scale-[0.98]"
+                      className="inline-flex items-center justify-center rounded-full border border-primary/35 bg-white px-5 py-2.5 text-center text-sm font-medium text-primary shadow-sm transition hover:bg-primary/5 active:scale-[0.98] md:min-w-0"
                     >
                       Editar perfil
                     </Link>
                     <Link
                       to={userCreatePostPath(sessionUserId, 'content')}
-                      className="inline-flex shrink-0 items-center justify-center rounded-full bg-primary px-5 py-2.5 text-center text-sm font-medium text-primary-foreground shadow-sm transition hover:opacity-90 active:scale-[0.98]"
+                      className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-2.5 text-center text-sm font-medium text-primary-foreground shadow-sm transition hover:opacity-90 active:scale-[0.98] md:min-w-0"
                     >
                       Criar postagem
                     </Link>
@@ -273,8 +273,8 @@ export function ProfileFeedLayout({ profileUserId }: ProfileFeedLayoutProps) {
                                   className={cn(
                                     'text-2xl leading-none',
                                     star <= featuredMomentRating.filledStars
-                                      ? 'text-fuchsia-500'
-                                      : 'text-neutral-300',
+                                      ? 'text-primary'
+                                      : 'text-muted-foreground/50',
                                   )}
                                   aria-hidden
                                 >
@@ -383,7 +383,7 @@ export function ProfileFeedLayout({ profileUserId }: ProfileFeedLayoutProps) {
                                 key={star}
                                 className={cn(
                                   'text-base leading-none',
-                                  star <= entry.stars ? 'text-fuchsia-500' : 'text-neutral-300',
+                                  star <= entry.stars ? 'text-primary' : 'text-muted-foreground/50',
                                 )}
                                 aria-hidden
                               >

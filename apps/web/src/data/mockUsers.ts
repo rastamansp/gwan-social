@@ -2,19 +2,17 @@ export type { EditorialPost, Post, UserProfile } from '@/data/legacyFeed.types'
 export type { ProfileRatedEntry } from '@/data/profileTabMocks'
 export { buildProfileFriendsList, profileRatedEntries } from '@/data/profileTabMocks'
 
+import type { FixtureDomain } from '@/data/fixtures/fixtureDomain.types'
 import type { EditorialPost, Post, UserProfile } from '@/data/legacyFeed.types'
+import { fixtures } from '@/data/fixtures/loadFixtures'
 import { MOCK_SOCIAL_POSTS, orderPostsForFeed } from '@/data/socialPosts.collection'
 import {
-  socialAuthorToUserProfile,
   socialPostToEditorial,
   socialPostToLegacyPost,
-  uniqueAuthorsFromPosts,
+  userProfileFromFixtureUser,
 } from '@/data/socialPosts.adapters'
 
-const IMG_MAIN =
-  'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=1200&auto=format&fit=crop'
-const IMG_SIDE =
-  'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=800&auto=format&fit=crop'
+const { main: IMG_MAIN, side: IMG_SIDE } = fixtures.ui.fallbackEditorialImages
 
 /** Ordem do feed: destaque editorial primeiro, depois por data. */
 export const socialFeedPostsOrdered = orderPostsForFeed(MOCK_SOCIAL_POSTS)
@@ -22,14 +20,26 @@ export const socialFeedPostsOrdered = orderPostsForFeed(MOCK_SOCIAL_POSTS)
 /** Lista plana para `PostCard`, `PostPage`, `FeedPostList` (camada legada). */
 export const posts: Post[] = socialFeedPostsOrdered.map(socialPostToLegacyPost)
 
-/** Perfis derivados dos autores + comentadores da coleção social. */
-export const users: UserProfile[] = uniqueAuthorsFromPosts(MOCK_SOCIAL_POSTS).map(
-  socialAuthorToUserProfile,
-)
+function countAcceptedFriends(domain: FixtureDomain, userId: string): number {
+  return domain.friendships.filter(
+    (f) =>
+      f.status === 'accepted' && (f.userId === userId || f.friendUserId === userId),
+  ).length
+}
 
-/** Utilizador “eu” no mock (Lacie / post em destaque). */
+/** Perfis a partir do catálogo normalizado de utilizadores + reputação por contexto. */
+export const users: UserProfile[] = (() => {
+  const list = fixtures.domain.users.map((u) => userProfileFromFixtureUser(u, fixtures.domain))
+  const patch = fixtures.sessionUserProfile
+  if (!patch) return list
+  return list.map((u) =>
+    u.id === fixtures.sessionDefaultUserId ? { ...u, ...patch } : u,
+  )
+})()
+
+/** Utilizador “eu” no mock — id em `fixtures.sessionDefaultUserId`. */
 export const currentUser =
-  users.find((u) => u.id === 'user_001') ?? users[0]
+  users.find((u) => u.id === fixtures.sessionDefaultUserId) ?? users[0]
 
 /** Mapa editorial por id (Nosedive) — gerado a partir da coleção rica. */
 export const editorialByPostId: Record<string, EditorialPost> = Object.fromEntries(
@@ -37,11 +47,7 @@ export const editorialByPostId: Record<string, EditorialPost> = Object.fromEntri
 )
 
 /** Estatísticas do cartão de perfil (feed estilo Nosedive — mock). */
-export const profileDashboardStats = {
-  photos: 128,
-  rated: 534,
-  friendsLabel: '2.4k',
-} as const
+export const profileDashboardStats = { ...fixtures.ui.profileDashboardStats }
 
 export type ProfileDashboardStats = {
   photos: number
@@ -49,18 +55,20 @@ export type ProfileDashboardStats = {
   friendsLabel: string
 }
 
-/** Métricas do cabeçalho do perfil: “eu” usa `profileDashboardStats`; outros derivam da coleção social. */
+/** Métricas do cabeçalho do perfil: “eu” usa `profileDashboardStats`; outros derivam do domínio. */
 export function getProfileDashboardStatsForUser(userId: string): ProfileDashboardStats {
   if (userId === currentUser.id) return { ...profileDashboardStats }
-  const social = MOCK_SOCIAL_POSTS.filter((p) => p.author.id === userId)
-  const photoPosts = social.filter((p) => p.media.some((m) => m.type === 'image')).length
-  const rated = social.reduce((s, p) => s + p.stats.ratingsCount, 0)
-  const tail = userId.match(/\d+/)?.[0] ?? '3'
-  const n = Number.parseInt(tail, 10) % 6
+  const d = fixtures.domain
+  const userPostIds = new Set(d.posts.filter((p) => p.authorId === userId).map((p) => p.id))
+  const photoPosts = [...userPostIds].filter((pid) =>
+    d.postMedia.some((m) => m.postId === pid && m.type === 'image'),
+  ).length
+  const ratedReceived = d.ratings.filter((r) => r.revieweeId === userId).length
+  const nFriends = countAcceptedFriends(d, userId)
   return {
-    photos: Math.max(photoPosts * 22 + 48, 12),
-    rated: Math.max(rated + 18, 10),
-    friendsLabel: `${(1.0 + n * 0.12).toFixed(1)}k`,
+    photos: Math.max(photoPosts * 20 + 40, photoPosts || 8),
+    rated: Math.max(ratedReceived, 8),
+    friendsLabel: nFriends >= 1000 ? `${(nFriends / 1000).toFixed(1)}k` : String(Math.max(nFriends, 1)),
   }
 }
 
@@ -84,32 +92,16 @@ export function getProfilePostsForUser(userId: string): Post[] {
   return sorted.map((sp) => byId.get(sp.id)).filter((p): p is Post => p != null)
 }
 
-export const sidebarReputationContext = [
-  ['Social', '4.9'],
-  ['Profissional', '4.6'],
-  ['Eventos', '4.8'],
-  ['Confiança', '4.7'],
-] as const
+export const sidebarReputationContext = fixtures.ui.sidebarReputationContext
 
 /** Destaque ao lado do hero (avaliação mock). */
-export const featuredMomentRating = {
-  extraRatingsLabel: '+19 avaliações',
-  filledStars: 2,
-  quote:
-    'Incrível, belo momento. Adorei a atmosfera e as conexões. Definitivamente inesquecível.',
-} as const
+export const featuredMomentRating = { ...fixtures.ui.featuredMomentRating }
 
 /** Postagens mostradas logo abaixo do bloco do hero (ids da coleção social). */
-export const FEED_POST_IDS_BELOW_HERO = ['post_005', 'post_006'] as const
+export const FEED_POST_IDS_BELOW_HERO = fixtures.ui.feedPostIdsBelowHero as readonly string[]
 
 /** Postagens de pessoas próximas (mock — sem geolocalização real). */
-export const nearbyPostIds: { postId: string; distanceKm: number }[] = [
-  { postId: 'post_001', distanceKm: 0.35 },
-  { postId: 'post_002', distanceKm: 0.62 },
-  { postId: 'post_004', distanceKm: 1.05 },
-  { postId: 'post_003', distanceKm: 1.8 },
-  { postId: 'post_005', distanceKm: 2.4 },
-]
+export const nearbyPostIds = fixtures.ui.nearbyPostDistances
 
 export function getNearbyPosts(): { post: Post; distanceKm: number }[] {
   return nearbyPostIds
@@ -167,7 +159,7 @@ export function buildFallbackEditorial(
     },
     title,
     images: [IMG_MAIN, IMG_SIDE, IMG_SIDE],
-    taggedPeople: `People ${author.name}`,
+    taggedPeople: `Pessoas ${author.name}`,
     sideRating: {
       count: author.ratingCount,
       person: {

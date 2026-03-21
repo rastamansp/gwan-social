@@ -1,0 +1,1480 @@
+{
+  "schemaVersion": 2,
+  "domain": {
+    "users": [
+      {
+        "id": "user_001",
+        "username": "laciepound",
+        "displayName": "Lacie Pound",
+        "avatarUrl": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&crop=face",
+        "headline": "Trabalhando em Hoddicker"
+      },
+      {
+        "id": "user_002",
+        "username": "hollystephens",
+        "displayName": "Holly Stephens",
+        "avatarUrl": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop&crop=face",
+        "headline": "Membro da comunidade"
+      },
+      {
+        "id": "user_003",
+        "username": "samanthab",
+        "displayName": "Samantha Berezan",
+        "avatarUrl": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&fit=crop&crop=face",
+        "headline": "Designer"
+      },
+      {
+        "id": "user_004",
+        "username": "ryanpound",
+        "displayName": "Ryan Pound",
+        "avatarUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face",
+        "headline": "Estrategista criativo"
+      },
+      {
+        "id": "user_005",
+        "username": "harrymatts",
+        "displayName": "Harry Matts",
+        "avatarUrl": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=face",
+        "headline": "Analista"
+      },
+      {
+        "id": "user_006",
+        "username": "jenniferjones",
+        "displayName": "Jennifer Jones",
+        "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=face",
+        "headline": "Assistente de marca"
+      },
+      {
+        "id": "user_008",
+        "username": "bennystone",
+        "displayName": "Benny Stone",
+        "avatarUrl": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face",
+        "headline": "Escritor"
+      },
+      {
+        "id": "user_009",
+        "username": "carrierussell",
+        "displayName": "Carrie Russell",
+        "avatarUrl": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=200&fit=crop&crop=face",
+        "headline": "Artista"
+      },
+      {
+        "id": "user_007",
+        "username": "carlaodell",
+        "displayName": "Carla O'Dell",
+        "avatarUrl": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=face",
+        "headline": "Consultora"
+      },
+      {
+        "id": "user_010",
+        "username": "bethanyj",
+        "displayName": "Bethany Jones",
+        "avatarUrl": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=200&h=200&fit=crop&crop=face",
+        "headline": "Curadora social"
+      },
+      {
+        "id": "user_012",
+        "username": "marcodune",
+        "displayName": "Marco Dune",
+        "avatarUrl": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=face",
+        "headline": "Chef"
+      },
+      {
+        "id": "user_011",
+        "username": "ninavale",
+        "displayName": "Nina Vale",
+        "avatarUrl": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=200&h=200&fit=crop&crop=face",
+        "headline": "Crítica gastronômica"
+      },
+      {
+        "id": "user_013",
+        "username": "terryvale",
+        "displayName": "Terry Vale",
+        "avatarUrl": "https://images.unsplash.com/photo-1504257434649-3a51d417caa7?w=200&h=200&fit=crop&crop=face",
+        "headline": "Consultor de fitness"
+      },
+      {
+        "id": "user_014",
+        "username": "michaelcalow",
+        "displayName": "Michael Calow",
+        "avatarUrl": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&h=200&fit=crop&crop=face",
+        "headline": "Arquiteto"
+      },
+      {
+        "id": "user_016",
+        "username": "jonasreed",
+        "displayName": "Jonas Reed",
+        "avatarUrl": "https://images.unsplash.com/photo-1463453091185-61582044d556?w=200&h=200&fit=crop&crop=face",
+        "headline": "Fotógrafo"
+      },
+      {
+        "id": "user_015",
+        "username": "vickycooper",
+        "displayName": "Vicky Cooper",
+        "avatarUrl": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200&h=200&fit=crop&crop=face",
+        "headline": "Estilista de interiores"
+      },
+      {
+        "id": "user_017",
+        "username": "elenafrost",
+        "displayName": "Elena Frost",
+        "avatarUrl": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=200&fit=crop&crop=face",
+        "headline": "Curadora de eventos"
+      },
+      {
+        "id": "user_019",
+        "username": "davidcrane",
+        "displayName": "David Crane",
+        "avatarUrl": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=face",
+        "headline": "Produtor"
+      },
+      {
+        "id": "user_018",
+        "username": "paulanunes",
+        "displayName": "Paula Nunes",
+        "avatarUrl": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=200&h=200&fit=crop&crop=face",
+        "headline": "Música ao vivo"
+      },
+      {
+        "id": "user_020",
+        "username": "amirhassan",
+        "displayName": "Amir Hassan",
+        "avatarUrl": "https://images.unsplash.com/photo-1463453091185-61582044d556?w=200&h=200&fit=crop&crop=face",
+        "headline": "Violonista"
+      },
+      {
+        "id": "user_021",
+        "username": "sofiameyer",
+        "displayName": "Sofia Meyer",
+        "avatarUrl": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=200&h=200&fit=crop&crop=face",
+        "headline": "Crítica cultural"
+      },
+      {
+        "id": "user_022",
+        "username": "ritaokonkwo",
+        "displayName": "Rita Okonkwo",
+        "avatarUrl": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=face",
+        "headline": "Voluntária & chef"
+      },
+      {
+        "id": "user_023",
+        "username": "tomweber",
+        "displayName": "Tom Weber",
+        "avatarUrl": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face",
+        "headline": "Educador"
+      }
+    ],
+    "posts": [
+      {
+        "id": "post_001",
+        "authorId": "user_001",
+        "type": "featured_moment",
+        "title": "Café perfeito no Céu dos Biscoitos",
+        "description": "Café da manhã com espuma impecável e um biscoito fresquinho ao lado.",
+        "createdAt": "2026-03-20T08:15:00Z",
+        "visibility": "public",
+        "category": "moments",
+        "location": {
+          "name": "Cafeteria Céu dos Biscoitos",
+          "city": "Hoddicker",
+          "country": "Brasil"
+        },
+        "tags": [
+          "café",
+          "manhã",
+          "biscoito",
+          "momentos",
+          "estilo"
+        ],
+        "isTrending": true,
+        "isHighestRated": false
+      },
+      {
+        "id": "post_002",
+        "authorId": "user_004",
+        "type": "feed_post",
+        "title": "Uma daquelas manhãs memoráveis",
+        "description": "Tudo encaixou hoje. Café forte, cabeça no lugar e um começo produtivo.",
+        "createdAt": "2026-03-20T07:40:00Z",
+        "visibility": "public",
+        "category": "moments",
+        "location": {
+          "name": "Centro",
+          "city": "Hoddicker",
+          "country": "Brasil"
+        },
+        "tags": [
+          "manhã",
+          "café",
+          "foco"
+        ],
+        "isTrending": false,
+        "isHighestRated": false
+      },
+      {
+        "id": "post_003",
+        "authorId": "user_006",
+        "type": "feed_post",
+        "title": "Gratidão com a vida hoje!!",
+        "description": "Grata pelas coisas simples, pelo tempo, pelas pessoas e pelas pequenas vitórias.",
+        "createdAt": "2026-03-20T06:55:00Z",
+        "visibility": "public",
+        "category": "moments",
+        "location": {
+          "name": "Zona Oeste",
+          "city": "Hoddicker",
+          "country": "Brasil"
+        },
+        "tags": [
+          "gratidão",
+          "vida",
+          "positivo",
+          "humor"
+        ],
+        "isTrending": true,
+        "isHighestRated": false
+      },
+      {
+        "id": "post_004",
+        "authorId": "user_010",
+        "type": "feed_post",
+        "title": "Lugar novo e brilhante para o jantar",
+        "description": "Um jantar com estilo, luz suave e pratos impecáveis.",
+        "createdAt": "2026-03-19T21:10:00Z",
+        "visibility": "public",
+        "category": "photos",
+        "location": {
+          "name": "Bellamy Lounge",
+          "city": "Hoddicker",
+          "country": "Brasil"
+        },
+        "tags": [
+          "jantar",
+          "estilo de vida",
+          "restaurante",
+          "social"
+        ],
+        "isTrending": true,
+        "isHighestRated": true
+      },
+      {
+        "id": "post_005",
+        "authorId": "user_013",
+        "type": "feed_post",
+        "title": "Corrida matinal do Terry à beira do lago",
+        "description": "Ar fresco, água calma e um ritmo forte antes do trabalho.",
+        "createdAt": "2026-03-19T06:20:00Z",
+        "visibility": "public",
+        "category": "moments",
+        "location": {
+          "name": "Lago Espelho",
+          "city": "Hoddicker",
+          "country": "Brasil"
+        },
+        "tags": [
+          "corrida",
+          "fitness",
+          "lago",
+          "manhã"
+        ],
+        "isTrending": true,
+        "isHighestRated": false
+      },
+      {
+        "id": "post_006",
+        "authorId": "user_014",
+        "type": "feed_post",
+        "title": "Cozinha azul, luz quente, noite calma",
+        "description": "Um registo em casa suave e elegante, com tons visuais reconfortantes.",
+        "createdAt": "2026-03-18T20:44:00Z",
+        "visibility": "public",
+        "category": "photos",
+        "location": {
+          "name": "Residência particular",
+          "city": "Hoddicker",
+          "country": "Brasil"
+        },
+        "tags": [
+          "interiores",
+          "casa",
+          "design",
+          "noite"
+        ],
+        "isTrending": false,
+        "isHighestRated": true
+      },
+      {
+        "id": "post_007",
+        "authorId": "user_017",
+        "type": "feed_post",
+        "title": "Terraço ao pôr do sol — microfone aberto",
+        "description": "Voz suave, cidade dourada e uma comunidade que realmente ouve. Noite de reputação no topo.",
+        "createdAt": "2026-03-17T19:30:00Z",
+        "visibility": "public",
+        "category": "photos",
+        "location": {
+          "name": "Skyline Terrace",
+          "city": "Hoddicker",
+          "country": "Brasil"
+        },
+        "tags": [
+          "terraço",
+          "música",
+          "pôr do sol",
+          "comunidade"
+        ],
+        "isTrending": false,
+        "isHighestRated": true
+      },
+      {
+        "id": "post_008",
+        "authorId": "user_020",
+        "type": "feed_post",
+        "title": "Sessão acústica no jardim da estufa",
+        "description": "Cordas, plantas e silêncio respeitoso. Avaliações altíssimas pela acústica natural.",
+        "createdAt": "2026-03-16T16:00:00Z",
+        "visibility": "public",
+        "category": "moments",
+        "location": {
+          "name": "Parque Estufa de Vidro",
+          "city": "Hoddicker",
+          "country": "Brasil"
+        },
+        "tags": [
+          "acústico",
+          "jardim",
+          "cultura",
+          "ao vivo"
+        ],
+        "isTrending": false,
+        "isHighestRated": true
+      },
+      {
+        "id": "post_009",
+        "authorId": "user_022",
+        "type": "feed_post",
+        "title": "Brunch solidário — segunda mesa lotada",
+        "description": "Receita revertida para refeições escolares. Comunidade avaliou o evento com nota quase máxima.",
+        "createdAt": "2026-03-15T11:00:00Z",
+        "visibility": "public",
+        "category": "moments",
+        "location": {
+          "name": "Salão Comunitário Leste",
+          "city": "Hoddicker",
+          "country": "Brasil"
+        },
+        "tags": [
+          "solidariedade",
+          "brunch",
+          "comunidade",
+          "comida"
+        ],
+        "isTrending": false,
+        "isHighestRated": true
+      },
+      {
+        "id": "post_010",
+        "authorId": "user_001",
+        "type": "feed_post",
+        "title": "Golden hour no terraço",
+        "description": "Chá à tardinha antes da multidão. O céu alinhou com o tom do dia — calmo, direto, honesto.",
+        "createdAt": "2026-03-19T16:45:00Z",
+        "visibility": "public",
+        "category": "moments",
+        "location": {
+          "name": "Skyline Terrace",
+          "city": "Hoddicker",
+          "country": "Brasil"
+        },
+        "tags": [
+          "terraço",
+          "pôr do sol",
+          "chá",
+          "momentos"
+        ],
+        "isTrending": false,
+        "isHighestRated": false
+      },
+      {
+        "id": "post_011",
+        "authorId": "user_001",
+        "type": "feed_post",
+        "title": "Notas para segunda-feira",
+        "description": "Manter o fio positivo. Pequenas vitórias empilham-se — registo rápido antes da reunião.",
+        "createdAt": "2026-03-18T12:00:00Z",
+        "visibility": "public",
+        "category": "moments",
+        "location": {
+          "name": "Hoddicker",
+          "city": "Hoddicker",
+          "country": "Brasil"
+        },
+        "tags": [
+          "trabalho",
+          "mentalidade",
+          "notas"
+        ],
+        "isTrending": false,
+        "isHighestRated": false
+      },
+      {
+        "id": "post_012",
+        "authorId": "user_001",
+        "type": "feed_post",
+        "title": "Brunch com o círculo antigo",
+        "description": "Histórias, risadas e xarope de ácer a mais. Reconectar não custa nada quando a mesa enche.",
+        "createdAt": "2026-03-17T11:20:00Z",
+        "visibility": "public",
+        "category": "moments",
+        "location": {
+          "name": "Lanchonete Leste",
+          "city": "Hoddicker",
+          "country": "Brasil"
+        },
+        "tags": [
+          "brunch",
+          "amigos",
+          "comida"
+        ],
+        "isTrending": false,
+        "isHighestRated": false
+      }
+    ],
+    "postMedia": [
+      {
+        "id": "media_001",
+        "postId": "post_001",
+        "type": "image",
+        "url": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=1200&auto=format&fit=crop",
+        "alt": "Xícara de café com latte art e biscoito",
+        "position": 0
+      },
+      {
+        "id": "media_002",
+        "postId": "post_004",
+        "type": "image",
+        "url": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=1200&auto=format&fit=crop",
+        "alt": "Mesa de jantar elegante",
+        "position": 0
+      },
+      {
+        "id": "media_003",
+        "postId": "post_005",
+        "type": "image",
+        "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=1200&auto=format&fit=crop",
+        "alt": "Corrida matinal perto de um lago",
+        "position": 0
+      },
+      {
+        "id": "media_004",
+        "postId": "post_006",
+        "type": "image",
+        "url": "https://images.unsplash.com/photo-1556911220-bff31c812dba?q=80&w=1200&auto=format&fit=crop",
+        "alt": "Cozinha em tons de azul com luzes quentes",
+        "position": 0
+      },
+      {
+        "id": "media_005",
+        "postId": "post_007",
+        "type": "image",
+        "url": "https://images.unsplash.com/photo-1514520776156-f7562f02b7b6?q=80&w=1200&auto=format&fit=crop",
+        "alt": "Terraço ao pôr do sol com cidade ao fundo",
+        "position": 0
+      },
+      {
+        "id": "media_006",
+        "postId": "post_008",
+        "type": "image",
+        "url": "https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=1200&auto=format&fit=crop",
+        "alt": "Músicos em ambiente com plantas",
+        "position": 0
+      },
+      {
+        "id": "media_007",
+        "postId": "post_009",
+        "type": "image",
+        "url": "https://images.unsplash.com/photo-1525351484163-7529414344d8?q=80&w=1200&auto=format&fit=crop",
+        "alt": "Mesa de brunch com vários pratos",
+        "position": 0
+      },
+      {
+        "id": "media_lacie_1",
+        "postId": "post_010",
+        "type": "image",
+        "url": "https://images.unsplash.com/photo-1514520776156-f7562f02b7b6?q=80&w=1200&auto=format&fit=crop",
+        "alt": "Terraço ao pôr do sol",
+        "position": 0
+      },
+      {
+        "id": "media_lacie_2",
+        "postId": "post_012",
+        "type": "image",
+        "url": "https://images.unsplash.com/photo-1525351484163-7529414344d8?q=80&w=1200&auto=format&fit=crop",
+        "alt": "Mesa de brunch",
+        "position": 0
+      }
+    ],
+    "postMentions": [
+      {
+        "postId": "post_001",
+        "userId": "user_001"
+      },
+      {
+        "postId": "post_002",
+        "userId": "user_004"
+      },
+      {
+        "postId": "post_003",
+        "userId": "user_006"
+      },
+      {
+        "postId": "post_004",
+        "userId": "user_010"
+      },
+      {
+        "postId": "post_005",
+        "userId": "user_013"
+      },
+      {
+        "postId": "post_006",
+        "userId": "user_014"
+      },
+      {
+        "postId": "post_007",
+        "userId": "user_017"
+      },
+      {
+        "postId": "post_008",
+        "userId": "user_020"
+      },
+      {
+        "postId": "post_009",
+        "userId": "user_022"
+      },
+      {
+        "postId": "post_010",
+        "userId": "user_001"
+      },
+      {
+        "postId": "post_011",
+        "userId": "user_001"
+      },
+      {
+        "postId": "post_012",
+        "userId": "user_001"
+      }
+    ],
+    "comments": [
+      {
+        "id": "comment_001",
+        "postId": "post_001",
+        "authorId": "user_002",
+        "text": "Adorei essa pausa gostosa",
+        "createdAt": "2026-03-20T09:02:00Z"
+      },
+      {
+        "id": "comment_002",
+        "postId": "post_001",
+        "authorId": "user_003",
+        "text": "Um momento para guardar na memória :)",
+        "createdAt": "2026-03-20T09:20:00Z"
+      },
+      {
+        "id": "comment_003",
+        "postId": "post_002",
+        "authorId": "user_005",
+        "text": "Começo de dia ótimo e cheio de atitude!",
+        "createdAt": "2026-03-20T08:05:00Z"
+      },
+      {
+        "id": "comment_004",
+        "postId": "post_003",
+        "authorId": "user_008",
+        "text": "Adoro a tua vibe!",
+        "createdAt": "2026-03-20T08:15:00Z"
+      },
+      {
+        "id": "comment_005",
+        "postId": "post_003",
+        "authorId": "user_009",
+        "text": "Que bom ler isso.",
+        "createdAt": "2026-03-20T08:22:00Z"
+      },
+      {
+        "id": "comment_006",
+        "postId": "post_004",
+        "authorId": "user_012",
+        "text": "Preciso ir lá em breve.",
+        "createdAt": "2026-03-19T22:12:00Z"
+      },
+      {
+        "id": "comment_007",
+        "postId": "post_006",
+        "authorId": "user_016",
+        "text": "Parece capa de revista.",
+        "createdAt": "2026-03-18T21:20:00Z"
+      },
+      {
+        "id": "comment_008",
+        "postId": "post_007",
+        "authorId": "user_019",
+        "text": "Som e luz no ponto certo.",
+        "createdAt": "2026-03-17T20:40:00Z"
+      },
+      {
+        "id": "comment_009",
+        "postId": "post_009",
+        "authorId": "user_023",
+        "text": "Organização 5 estrelas e comida honesta.",
+        "createdAt": "2026-03-15T12:30:00Z"
+      }
+    ],
+    "ratings": [
+      {
+        "id": "rating_001",
+        "reviewerId": "user_002",
+        "revieweeId": "user_001",
+        "postId": "post_001",
+        "value": 5,
+        "comment": "Adorei essa pausa gostosa",
+        "createdAt": "2026-03-20T09:02:00Z",
+        "contextType": "social",
+        "interactionId": "int_rating_001"
+      },
+      {
+        "id": "rating_002",
+        "reviewerId": "user_007",
+        "revieweeId": "user_006",
+        "postId": "post_003",
+        "value": 5,
+        "comment": "Energia radiante hoje.",
+        "createdAt": "2026-03-20T08:11:00Z",
+        "contextType": "social",
+        "interactionId": "int_rating_002"
+      },
+      {
+        "id": "rating_003",
+        "reviewerId": "user_011",
+        "revieweeId": "user_010",
+        "postId": "post_004",
+        "value": 5,
+        "comment": "Ambiente e sabor incríveis.",
+        "createdAt": "2026-03-19T22:00:00Z",
+        "contextType": "social",
+        "interactionId": "int_rating_003"
+      },
+      {
+        "id": "rating_004",
+        "reviewerId": "user_015",
+        "revieweeId": "user_014",
+        "postId": "post_006",
+        "value": 5,
+        "comment": "O ambiente funciona lindamente aqui.",
+        "createdAt": "2026-03-18T21:03:00Z",
+        "contextType": "social",
+        "interactionId": "int_rating_004"
+      },
+      {
+        "id": "rating_005",
+        "reviewerId": "user_018",
+        "revieweeId": "user_017",
+        "postId": "post_007",
+        "value": 5,
+        "comment": "Energia impecável. Voltarei todas as semanas.",
+        "createdAt": "2026-03-17T20:15:00Z",
+        "contextType": "social",
+        "interactionId": "int_rating_005"
+      },
+      {
+        "id": "rating_006",
+        "reviewerId": "user_021",
+        "revieweeId": "user_020",
+        "postId": "post_008",
+        "value": 5,
+        "comment": "Raro ver tanta qualidade num espaço tão íntimo.",
+        "createdAt": "2026-03-16T17:05:00Z",
+        "contextType": "social",
+        "interactionId": "int_rating_006"
+      },
+      {
+        "id": "rev_001",
+        "reviewerId": "user_002",
+        "revieweeId": "user_001",
+        "postId": "post_001",
+        "value": 5,
+        "comment": "Adorei essa pausa gostosa x",
+        "createdAt": "2026-03-20T09:02:00Z",
+        "contextType": "social",
+        "interactionId": "int_rev_001"
+      },
+      {
+        "id": "rev_002",
+        "reviewerId": "user_003",
+        "revieweeId": "user_001",
+        "postId": "post_001",
+        "value": 5,
+        "comment": "Um momento para guardar na memória :)",
+        "createdAt": "2026-03-20T09:20:00Z",
+        "contextType": "social",
+        "interactionId": "int_rev_002"
+      },
+      {
+        "id": "rev_003",
+        "reviewerId": "user_007",
+        "revieweeId": "user_001",
+        "postId": "post_001",
+        "value": 4,
+        "comment": "Composição linda — a luz no café ficou perfeita.",
+        "createdAt": "2026-03-19T18:00:00Z",
+        "contextType": "social",
+        "interactionId": "int_rev_003"
+      },
+      {
+        "id": "rev_004",
+        "reviewerId": "user_011",
+        "revieweeId": "user_001",
+        "postId": null,
+        "value": 5,
+        "comment": "Perfil muito coerente com o teu estilo no lago. Adoro.",
+        "createdAt": "2026-03-18T14:22:00Z",
+        "contextType": "social",
+        "interactionId": "int_rev_004"
+      },
+      {
+        "id": "rev_005",
+        "reviewerId": "user_015",
+        "revieweeId": "user_001",
+        "postId": null,
+        "value": 5,
+        "comment": "Inspiradora. Manténs um padrão elevadíssimo.",
+        "createdAt": "2026-03-17T10:05:00Z",
+        "contextType": "social",
+        "interactionId": "int_rev_005"
+      },
+      {
+        "id": "rev_006",
+        "reviewerId": "user_008",
+        "revieweeId": "user_001",
+        "postId": null,
+        "value": 4,
+        "comment": "Conteúdo honesto e bem editado.",
+        "createdAt": "2026-03-16T21:30:00Z",
+        "contextType": "social",
+        "interactionId": "int_rev_006"
+      },
+      {
+        "id": "rev_007",
+        "reviewerId": "user_014",
+        "revieweeId": "user_001",
+        "postId": null,
+        "value": 5,
+        "comment": "Fotos com alma. Quero colaborar num próximo evento.",
+        "createdAt": "2026-03-15T08:15:00Z",
+        "contextType": "social",
+        "interactionId": "int_rev_007"
+      },
+      {
+        "id": "rev_008",
+        "reviewerId": "user_016",
+        "revieweeId": "user_001",
+        "postId": null,
+        "value": 4,
+        "comment": "Boa energia no feed. Continua.",
+        "createdAt": "2026-03-14T16:40:00Z",
+        "contextType": "social",
+        "interactionId": "int_rev_008"
+      }
+    ],
+    "friendships": [
+      {
+        "userId": "user_001",
+        "friendUserId": "user_002",
+        "status": "accepted"
+      },
+      {
+        "userId": "user_001",
+        "friendUserId": "user_003",
+        "status": "accepted"
+      },
+      {
+        "userId": "user_001",
+        "friendUserId": "user_006",
+        "status": "accepted"
+      },
+      {
+        "userId": "user_001",
+        "friendUserId": "user_010",
+        "status": "accepted"
+      },
+      {
+        "userId": "user_001",
+        "friendUserId": "user_013",
+        "status": "accepted"
+      },
+      {
+        "userId": "user_001",
+        "friendUserId": "user_014",
+        "status": "accepted"
+      },
+      {
+        "userId": "user_001",
+        "friendUserId": "user_017",
+        "status": "accepted"
+      },
+      {
+        "userId": "user_001",
+        "friendUserId": "user_020",
+        "status": "accepted"
+      },
+      {
+        "userId": "user_001",
+        "friendUserId": "user_022",
+        "status": "accepted"
+      }
+    ],
+    "interactions": [
+      {
+        "id": "int_rating_001",
+        "actorUserId": "user_002",
+        "targetUserId": "user_001",
+        "type": "post_engagement",
+        "referenceType": "post",
+        "referenceId": "post_001",
+        "occurredAt": "2026-03-20T09:02:00Z",
+        "status": "completed"
+      },
+      {
+        "id": "int_rating_002",
+        "actorUserId": "user_007",
+        "targetUserId": "user_006",
+        "type": "post_engagement",
+        "referenceType": "post",
+        "referenceId": "post_003",
+        "occurredAt": "2026-03-20T08:11:00Z",
+        "status": "completed"
+      },
+      {
+        "id": "int_rating_003",
+        "actorUserId": "user_011",
+        "targetUserId": "user_010",
+        "type": "post_engagement",
+        "referenceType": "post",
+        "referenceId": "post_004",
+        "occurredAt": "2026-03-19T22:00:00Z",
+        "status": "completed"
+      },
+      {
+        "id": "int_rating_004",
+        "actorUserId": "user_015",
+        "targetUserId": "user_014",
+        "type": "post_engagement",
+        "referenceType": "post",
+        "referenceId": "post_006",
+        "occurredAt": "2026-03-18T21:03:00Z",
+        "status": "completed"
+      },
+      {
+        "id": "int_rating_005",
+        "actorUserId": "user_018",
+        "targetUserId": "user_017",
+        "type": "post_engagement",
+        "referenceType": "post",
+        "referenceId": "post_007",
+        "occurredAt": "2026-03-17T20:15:00Z",
+        "status": "completed"
+      },
+      {
+        "id": "int_rating_006",
+        "actorUserId": "user_021",
+        "targetUserId": "user_020",
+        "type": "post_engagement",
+        "referenceType": "post",
+        "referenceId": "post_008",
+        "occurredAt": "2026-03-16T17:05:00Z",
+        "status": "completed"
+      },
+      {
+        "id": "int_rev_001",
+        "actorUserId": "user_002",
+        "targetUserId": "user_001",
+        "type": "post_engagement",
+        "referenceType": "post",
+        "referenceId": "post_001",
+        "occurredAt": "2026-03-20T09:02:00Z",
+        "status": "completed"
+      },
+      {
+        "id": "int_rev_002",
+        "actorUserId": "user_003",
+        "targetUserId": "user_001",
+        "type": "post_engagement",
+        "referenceType": "post",
+        "referenceId": "post_001",
+        "occurredAt": "2026-03-20T09:20:00Z",
+        "status": "completed"
+      },
+      {
+        "id": "int_rev_003",
+        "actorUserId": "user_007",
+        "targetUserId": "user_001",
+        "type": "post_engagement",
+        "referenceType": "post",
+        "referenceId": "post_001",
+        "occurredAt": "2026-03-19T18:00:00Z",
+        "status": "completed"
+      },
+      {
+        "id": "int_rev_004",
+        "actorUserId": "user_011",
+        "targetUserId": "user_001",
+        "type": "post_engagement",
+        "referenceType": "profile",
+        "referenceId": "user_001",
+        "occurredAt": "2026-03-18T14:22:00Z",
+        "status": "completed"
+      },
+      {
+        "id": "int_rev_005",
+        "actorUserId": "user_015",
+        "targetUserId": "user_001",
+        "type": "post_engagement",
+        "referenceType": "profile",
+        "referenceId": "user_001",
+        "occurredAt": "2026-03-17T10:05:00Z",
+        "status": "completed"
+      },
+      {
+        "id": "int_rev_006",
+        "actorUserId": "user_008",
+        "targetUserId": "user_001",
+        "type": "post_engagement",
+        "referenceType": "profile",
+        "referenceId": "user_001",
+        "occurredAt": "2026-03-16T21:30:00Z",
+        "status": "completed"
+      },
+      {
+        "id": "int_rev_007",
+        "actorUserId": "user_014",
+        "targetUserId": "user_001",
+        "type": "post_engagement",
+        "referenceType": "profile",
+        "referenceId": "user_001",
+        "occurredAt": "2026-03-15T08:15:00Z",
+        "status": "completed"
+      },
+      {
+        "id": "int_rev_008",
+        "actorUserId": "user_016",
+        "targetUserId": "user_001",
+        "type": "post_engagement",
+        "referenceType": "profile",
+        "referenceId": "user_001",
+        "occurredAt": "2026-03-14T16:40:00Z",
+        "status": "completed"
+      }
+    ],
+    "userReputationContexts": [
+      {
+        "userId": "user_001",
+        "contextType": "social",
+        "score": 4.267
+      },
+      {
+        "userId": "user_002",
+        "contextType": "social",
+        "score": 4
+      },
+      {
+        "userId": "user_003",
+        "contextType": "social",
+        "score": 4.1
+      },
+      {
+        "userId": "user_004",
+        "contextType": "social",
+        "score": 4.113
+      },
+      {
+        "userId": "user_005",
+        "contextType": "social",
+        "score": 3.9
+      },
+      {
+        "userId": "user_006",
+        "contextType": "social",
+        "score": 4.302
+      },
+      {
+        "userId": "user_008",
+        "contextType": "social",
+        "score": 4.2
+      },
+      {
+        "userId": "user_009",
+        "contextType": "social",
+        "score": 4
+      },
+      {
+        "userId": "user_007",
+        "contextType": "social",
+        "score": 4.6
+      },
+      {
+        "userId": "user_010",
+        "contextType": "social",
+        "score": 4.512
+      },
+      {
+        "userId": "user_012",
+        "contextType": "social",
+        "score": 4.1
+      },
+      {
+        "userId": "user_011",
+        "contextType": "social",
+        "score": 4.7
+      },
+      {
+        "userId": "user_013",
+        "contextType": "social",
+        "score": 4.388
+      },
+      {
+        "userId": "user_014",
+        "contextType": "social",
+        "score": 4.221
+      },
+      {
+        "userId": "user_016",
+        "contextType": "social",
+        "score": 4.3
+      },
+      {
+        "userId": "user_015",
+        "contextType": "social",
+        "score": 4.5
+      },
+      {
+        "userId": "user_017",
+        "contextType": "social",
+        "score": 4.68
+      },
+      {
+        "userId": "user_019",
+        "contextType": "social",
+        "score": 4.2
+      },
+      {
+        "userId": "user_018",
+        "contextType": "social",
+        "score": 4.55
+      },
+      {
+        "userId": "user_020",
+        "contextType": "social",
+        "score": 4.41
+      },
+      {
+        "userId": "user_021",
+        "contextType": "social",
+        "score": 4.72
+      },
+      {
+        "userId": "user_022",
+        "contextType": "social",
+        "score": 4.59
+      },
+      {
+        "userId": "user_023",
+        "contextType": "social",
+        "score": 4.05
+      }
+    ],
+    "postEngagementSnapshots": {
+      "post_001": {
+        "stats": {
+          "views": 1284,
+          "likes": 311,
+          "comments": 6,
+          "ratingsCount": 11,
+          "shares": 18
+        },
+        "ratings": {
+          "average": 4.8,
+          "distribution": {
+            "1": 0,
+            "2": 0,
+            "3": 1,
+            "4": 2,
+            "5": 8
+          },
+          "latestHighlightedRating": {
+            "id": "rating_001",
+            "reviewer": {
+              "id": "user_002",
+              "name": "Holly Stephens",
+              "username": "hollystephens",
+              "avatarUrl": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop&crop=face",
+              "score": 4,
+              "headline": "Membro da comunidade"
+            },
+            "value": 5,
+            "comment": "Adorei essa pausa gostosa",
+            "createdAt": "2026-03-20T09:02:00Z"
+          }
+        }
+      },
+      "post_002": {
+        "stats": {
+          "views": 532,
+          "likes": 94,
+          "comments": 2,
+          "ratingsCount": 3,
+          "shares": 4
+        },
+        "ratings": {
+          "average": 4.3,
+          "distribution": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 2,
+            "5": 1
+          },
+          "latestHighlightedRating": null
+        }
+      },
+      "post_003": {
+        "stats": {
+          "views": 618,
+          "likes": 140,
+          "comments": 4,
+          "ratingsCount": 7,
+          "shares": 3
+        },
+        "ratings": {
+          "average": 4.7,
+          "distribution": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 2,
+            "5": 5
+          },
+          "latestHighlightedRating": {
+            "id": "rating_002",
+            "reviewer": {
+              "id": "user_007",
+              "name": "Carla O'Dell",
+              "username": "carlaodell",
+              "avatarUrl": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=face",
+              "score": 4.6,
+              "headline": "Consultora"
+            },
+            "value": 5,
+            "comment": "Energia radiante hoje.",
+            "createdAt": "2026-03-20T08:11:00Z"
+          }
+        }
+      },
+      "post_004": {
+        "stats": {
+          "views": 2140,
+          "likes": 501,
+          "comments": 12,
+          "ratingsCount": 37,
+          "shares": 22
+        },
+        "ratings": {
+          "average": 4.9,
+          "distribution": {
+            "1": 0,
+            "2": 0,
+            "3": 1,
+            "4": 2,
+            "5": 34
+          },
+          "latestHighlightedRating": {
+            "id": "rating_003",
+            "reviewer": {
+              "id": "user_011",
+              "name": "Nina Vale",
+              "username": "ninavale",
+              "avatarUrl": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=200&h=200&fit=crop&crop=face",
+              "score": 4.7,
+              "headline": "Crítica gastronômica"
+            },
+            "value": 5,
+            "comment": "Ambiente e sabor incríveis.",
+            "createdAt": "2026-03-19T22:00:00Z"
+          }
+        }
+      },
+      "post_005": {
+        "stats": {
+          "views": 943,
+          "likes": 199,
+          "comments": 5,
+          "ratingsCount": 18,
+          "shares": 7
+        },
+        "ratings": {
+          "average": 4.6,
+          "distribution": {
+            "1": 0,
+            "2": 0,
+            "3": 2,
+            "4": 3,
+            "5": 13
+          },
+          "latestHighlightedRating": null
+        }
+      },
+      "post_006": {
+        "stats": {
+          "views": 1302,
+          "likes": 274,
+          "comments": 9,
+          "ratingsCount": 29,
+          "shares": 8
+        },
+        "ratings": {
+          "average": 4.9,
+          "distribution": {
+            "1": 0,
+            "2": 0,
+            "3": 1,
+            "4": 1,
+            "5": 27
+          },
+          "latestHighlightedRating": {
+            "id": "rating_004",
+            "reviewer": {
+              "id": "user_015",
+              "name": "Vicky Cooper",
+              "username": "vickycooper",
+              "avatarUrl": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200&h=200&fit=crop&crop=face",
+              "score": 4.5,
+              "headline": "Estilista de interiores"
+            },
+            "value": 5,
+            "comment": "O ambiente funciona lindamente aqui.",
+            "createdAt": "2026-03-18T21:03:00Z"
+          }
+        }
+      },
+      "post_007": {
+        "stats": {
+          "views": 2890,
+          "likes": 612,
+          "comments": 28,
+          "ratingsCount": 42,
+          "shares": 41
+        },
+        "ratings": {
+          "average": 4.95,
+          "distribution": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 2,
+            "5": 40
+          },
+          "latestHighlightedRating": {
+            "id": "rating_005",
+            "reviewer": {
+              "id": "user_018",
+              "name": "Paula Nunes",
+              "username": "paulanunes",
+              "avatarUrl": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=200&h=200&fit=crop&crop=face",
+              "score": 4.55,
+              "headline": "Música ao vivo"
+            },
+            "value": 5,
+            "comment": "Energia impecável. Voltarei todas as semanas.",
+            "createdAt": "2026-03-17T20:15:00Z"
+          }
+        }
+      },
+      "post_008": {
+        "stats": {
+          "views": 1566,
+          "likes": 388,
+          "comments": 15,
+          "ratingsCount": 24,
+          "shares": 19
+        },
+        "ratings": {
+          "average": 4.88,
+          "distribution": {
+            "1": 0,
+            "2": 0,
+            "3": 0,
+            "4": 3,
+            "5": 21
+          },
+          "latestHighlightedRating": {
+            "id": "rating_006",
+            "reviewer": {
+              "id": "user_021",
+              "name": "Sofia Meyer",
+              "username": "sofiameyer",
+              "avatarUrl": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=200&h=200&fit=crop&crop=face",
+              "score": 4.72,
+              "headline": "Crítica cultural"
+            },
+            "value": 5,
+            "comment": "Raro ver tanta qualidade num espaço tão íntimo.",
+            "createdAt": "2026-03-16T17:05:00Z"
+          }
+        }
+      },
+      "post_009": {
+        "stats": {
+          "views": 4120,
+          "likes": 890,
+          "comments": 44,
+          "ratingsCount": 31,
+          "shares": 67
+        },
+        "ratings": {
+          "average": 4.86,
+          "distribution": {
+            "1": 0,
+            "2": 0,
+            "3": 1,
+            "4": 3,
+            "5": 27
+          },
+          "latestHighlightedRating": null
+        }
+      },
+      "post_010": {
+        "stats": {
+          "views": 892,
+          "likes": 214,
+          "comments": 5,
+          "ratingsCount": 14,
+          "shares": 9
+        },
+        "ratings": {
+          "average": 4.7,
+          "distribution": {
+            "1": 0,
+            "2": 0,
+            "3": 1,
+            "4": 3,
+            "5": 10
+          },
+          "latestHighlightedRating": null
+        }
+      },
+      "post_011": {
+        "stats": {
+          "views": 412,
+          "likes": 78,
+          "comments": 2,
+          "ratingsCount": 6,
+          "shares": 3
+        },
+        "ratings": {
+          "average": 4.5,
+          "distribution": {
+            "1": 0,
+            "2": 0,
+            "3": 1,
+            "4": 2,
+            "5": 3
+          },
+          "latestHighlightedRating": null
+        }
+      },
+      "post_012": {
+        "stats": {
+          "views": 1102,
+          "likes": 256,
+          "comments": 8,
+          "ratingsCount": 19,
+          "shares": 11
+        },
+        "ratings": {
+          "average": 4.6,
+          "distribution": {
+            "1": 0,
+            "2": 0,
+            "3": 1,
+            "4": 4,
+            "5": 14
+          },
+          "latestHighlightedRating": null
+        }
+      }
+    }
+  },
+  "sessionDefaultUserId": "user_001",
+  "sessionUserProfile": {
+    "bio": "Momentos simples, boa luz e cafés em Hoddicker. A partilhar o dia a dia com curiosidade e consistência."
+  },
+  "ui": {
+    "profileDashboardStats": {
+      "photos": 128,
+      "rated": 534,
+      "friendsLabel": "2.4k"
+    },
+    "sidebarReputationContext": [
+      [
+        "Vida social",
+        "4.9"
+      ],
+      [
+        "Profissional",
+        "4.6"
+      ],
+      [
+        "Eventos",
+        "4.8"
+      ],
+      [
+        "Confiança",
+        "4.7"
+      ]
+    ],
+    "featuredMomentRating": {
+      "extraRatingsLabel": "+19 avaliações",
+      "filledStars": 2,
+      "quote": "Incrível, belo momento. Adorei a atmosfera e as conexões. Definitivamente inesquecível."
+    },
+    "feedPostIdsBelowHero": [
+      "post_005",
+      "post_006"
+    ],
+    "nearbyPostDistances": [
+      {
+        "postId": "post_001",
+        "distanceKm": 0.35
+      },
+      {
+        "postId": "post_002",
+        "distanceKm": 0.62
+      },
+      {
+        "postId": "post_004",
+        "distanceKm": 1.05
+      },
+      {
+        "postId": "post_003",
+        "distanceKm": 1.8
+      },
+      {
+        "postId": "post_005",
+        "distanceKm": 2.4
+      }
+    ],
+    "fallbackEditorialImages": {
+      "main": "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=1200&auto=format&fit=crop",
+      "side": "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=800&auto=format&fit=crop",
+      "avatarFallback": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop&crop=face"
+    }
+  }
+}

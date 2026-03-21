@@ -20,7 +20,7 @@ Definir **dev**, **staging** e **produção** em termos de configuração, segre
 - **API:** `API_PUBLIC_URL`  
 - **Worker:** filas, concorrência, timeouts  
 - **Web (build-time Vite):** `VITE_API_URL`, `VITE_APP_NAME`, `VITE_APP_VERSION` — injetadas no bundle em `docker build` (ver [docker/Dockerfile](../../docker/Dockerfile)).  
-- **Web (Traefik / Compose produção):** `GWAN_SOCIAL_HOST` — domínio na regra `Host(\`…\`)` (ver [.env.example](../../.env.example) na raiz).
+- **Web (Traefik / Compose produção):** `GWAN_SOCIAL_HOST` — domínio na regra `Host(\`…\`)` (ver [.env.example](../../.env.example) na raiz). URL canónica da SPA: **https://social.gwan.com.br/** (sem path para a entrada principal; rotas são client-side).
 
 Nomes exatos adicionais podem ser listados em `.env.example` à medida que a API e o worker existirem (sem segredos no Git).
 

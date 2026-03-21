@@ -2,7 +2,9 @@
 
 Interface **React** + **TypeScript** + **Tailwind CSS v4** (plugin Vite `@tailwindcss/vite`).
 
-**Docker (build de produção na raiz do monorepo):** ver [README.md](../../README.md#subir-a-aplicação-com-docker).
+**URL base (produção):** https://social.gwan.com.br/ — `index.html` inclui meta **Open Graph** / **Twitter Card** e `link rel="canonical"` com esta base para partilhas e SEO.
+
+**Docker (build de produção na raiz do monorepo):** ver [README.md](../../README.md#como-executar).
 
 ## Comandos
 
@@ -45,11 +47,14 @@ Na raiz do monorepo: `npm run dev:web`.
 - `src/components/social/` — `NavBar`, `FeedPostList`, `ProfileHeader`, `PostCard`, `UserCard`, `Leaderboard`, `StarRating`, e frame editorial: `SocialPostCard`, `UserReputationSidebar`, `VoteStarRow`, `ReputationStars`, `CommentPreviewList`
 - `src/components/layout/` — apenas landing `/presentation`
 - `src/data/socialPost.types.ts` — tipos da coleção rica (post, autor, ratings, comentários, tags)
-- `src/data/socialPosts.collection.ts` — dados mock (`MOCK_SOCIAL_POSTS`, ordem do feed)
-- `src/data/socialPosts.adapters.ts` — mapeamento para `Post` / `EditorialPost` (UI legada)
+- `src/data/fixtures/gwan-social.fixtures.json` — **seed mock único** (`schemaVersion`, `socialPosts`, `profile`, `sessionDefaultUserId`, `ui`); editar aqui para alterar dados de demonstração ou mapear entidades para backend
+- `src/data/fixtures/loadFixtures.ts` — carrega o JSON tipado (`fixtures`)
+- `src/data/fixture-types.ts` — tipos partilhados dos fixtures (ex.: `ProfileRatedEntry`)
+- `src/data/socialPosts.collection.ts` — `MOCK_SOCIAL_POSTS` a partir do JSON + `orderPostsForFeed`
+- `src/data/socialPosts.adapters.ts` — mapeamento para `Post` / `EditorialPost` (UI legada); imagens fallback a partir do JSON
 - `src/data/socialPosts.index.ts` — consultas (`getTrendingSocialPosts`, `getFeaturedSocialPost`, …)
 - `src/data/legacyFeed.types.ts` — `Post`, `EditorialPost`, `UserProfile` usados pelos componentes
-- `src/data/mockUsers.ts` — `posts`, `users`, `editorialByPostId` derivados da coleção social + stats de perfil/sidebar
+- `src/data/mockUsers.ts` — `posts`, `users`, `editorialByPostId` derivados da coleção social + stats de perfil/sidebar (literais do JSON)
 - Alias TypeScript/Vite: `@/` → `src/`
 
 Regras de negócio e chamadas à API: [`docs/07-standards/coding-standards.md`](../../docs/07-standards/coding-standards.md) e [`.cursorrules`](../../.cursorrules).

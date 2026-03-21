@@ -3,6 +3,7 @@
 **Produto (nome provisório):** Gwan Social Reputation  
 **Versão da baseline:** 2.1  
 **Última revisão:** 2026-03-21  
+**URL base (produção — SPA web):** https://social.gwan.com.br/  
 **Escopo:** governança, arquitetura (visão inspirada em domínios TOGAF), padrões de entrega e integração entre `api-node` (NestJS), `worker-python` (FastAPI + workers), `web` (React), `mobile` (React Native), PostgreSQL e Redis.
 
 ## Estado da implementação (snapshot)

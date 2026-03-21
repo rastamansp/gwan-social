@@ -12,7 +12,7 @@ export interface VoteStarRowProps {
 }
 
 /**
- * Votação interativa 1–5 estrelas (estilo menta Nosedive).
+ * Votação interativa 1–5 estrelas (acento magenta / tom pastel).
  * Apenas UI — sem chamada API; o pai persiste estado se necessário.
  */
 export function VoteStarRow({ value, onChange, disabled, className, labelledBy }: VoteStarRowProps) {
@@ -44,8 +44,8 @@ export function VoteStarRow({ value, onChange, disabled, className, labelledBy }
               'rounded-md disabled:cursor-not-allowed disabled:opacity-40',
               !disabled && 'cursor-pointer active:scale-95',
               active
-                ? 'text-nosedive-star drop-shadow-[0_0_12px_rgba(167,243,208,0.85)]'
-                : 'text-nosedive-star/35',
+                ? 'text-nosedive-star drop-shadow-[0_0_14px_rgba(224,86,253,0.55)]'
+                : 'text-muted-foreground/55',
             )}
             aria-pressed={star <= value}
             aria-label={`${star} ${star === 1 ? 'estrela' : 'estrelas'}`}

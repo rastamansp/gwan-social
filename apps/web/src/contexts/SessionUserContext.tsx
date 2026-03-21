@@ -9,7 +9,7 @@ import {
 import type { UserProfile } from '@/data/legacyFeed.types'
 import { currentUser, users } from '@/data/mockUsers'
 
-const STORAGE_KEY = 'gwan-social-session-user-overrides-v1'
+const STORAGE_KEY = 'gwan-social-session-user-overrides-v2'
 
 export type SessionUserOverrides = Partial<Pick<UserProfile, 'name' | 'handle' | 'bio' | 'avatar'>>
 

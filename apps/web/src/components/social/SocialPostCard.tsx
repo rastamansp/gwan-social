@@ -78,18 +78,18 @@ export function SocialPostCard({
                   {profileHref ? (
                     <Link
                       to={profileHref}
-                      className="font-display text-lg font-light tracking-tight text-[#6b6070] transition hover:text-[#4c4451] hover:underline sm:text-xl md:text-2xl"
+                      className="font-display text-lg font-light tracking-tight text-nosedive-muted transition hover:text-nosedive-title hover:underline sm:text-xl md:text-2xl"
                     >
                       <h2 className="inline font-display text-lg font-light tracking-tight sm:text-xl md:text-2xl">
                         {post.user.name}
                       </h2>
                     </Link>
                   ) : (
-                    <h2 className="font-display text-lg font-light tracking-tight text-[#6b6070] sm:text-xl md:text-2xl">
+                    <h2 className="font-display text-lg font-light tracking-tight text-nosedive-muted sm:text-xl md:text-2xl">
                       {post.user.name}
                     </h2>
                   )}
-                  <span className="font-display text-2xl font-light text-[#4c4451] sm:text-3xl">
+                  <span className="font-display text-2xl font-light text-nosedive-title sm:text-3xl">
                     {post.user.rating}
                   </span>
                 </div>

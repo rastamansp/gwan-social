@@ -9,6 +9,11 @@
 </p>
 
 <p align="center">
+  <strong>URL base (produção):</strong>
+  <a href="https://social.gwan.com.br/">https://social.gwan.com.br/</a>
+</p>
+
+<p align="center">
   <a href="#visao-geral">Visão geral</a> ·
   <a href="#inspiracao">Inspiração</a> ·
   <a href="#screenshots">Screenshots</a> ·
@@ -27,7 +32,7 @@
 
 **Gwan Social Reputation** explora **reputação por contexto** — não uma “nota social única” que define o valor de uma pessoa. A ideia é considerar dimensões diferentes de interação (convivência, confiança em transações, colaboração, comunidade, etc.) e evoluir para regras de negócio rastreáveis.
 
-O repositório é um **monorepo**; o que roda hoje é a **app web** (React + Vite), com **dados mock** para demonstrar fluxos de produto e UI.
+O repositório é um **monorepo**; o que roda hoje é a **app web** (React + Vite), com **dados mock** para demonstrar fluxos de produto e UI. A instância pública alvo está em **https://social.gwan.com.br/** (SPA; meta tags Open Graph em `apps/web/index.html` usam esta base para pré-visualizações em redes sociais).
 
 O projeto serve para estudar:
 
@@ -39,6 +44,19 @@ O projeto serve para estudar:
 > **Regra-alvo do produto:** em versões futuras, **só será possível avaliar outra pessoa após uma interação registrada**, reduzindo fraude e aumentando o significado da reputação. No MVP atual, a autenticação e os votos são **locais (demonstração)**.
 
 Documentação arquitetural e de governança: [`docs/README.md`](docs/README.md).
+
+### Fixtures da app web (`schemaVersion` 2)
+
+O ficheiro [`apps/web/src/data/fixtures/gwan-social.fixtures.json`](apps/web/src/data/fixtures/gwan-social.fixtures.json) separa:
+
+- **`domain`** — modelo normalizado de leitura para o mock: `users`, `posts`, `postMedia`, `postMentions`, `comments`, `ratings`, `friendships`, `interactions`, `userReputationContexts`, e opcionalmente `postEngagementSnapshots` (agregados de feed alinhados ao antigo cartão denormalizado).
+- **`sessionDefaultUserId`**, **`sessionUserProfile`**, **`ui`** — cenário de demo (sessão simulada, estatísticas de cartão de perfil, ordem do feed, distâncias “nearby”, imagens de fallback, etc.), fora do núcleo de domínio.
+
+Em runtime, [`hydrateFixtures.ts`](apps/web/src/data/fixtures/hydrateFixtures.ts) monta o **read model** [`SocialPost`](apps/web/src/data/socialPost.types.ts) e listas de perfil consumidos pelo resto da app. Se ainda tiveres um JSON `schemaVersion: 1`, podes gerar o v2 com:
+
+`npm run emit:fixtures --workspace=web`
+
+Mapeamento futuro sugerido para backend NestJS: módulos `users`, `posts`, `media`, `comments`, `ratings`, `connections`, `interactions`, `reputation`, `feed` (queries / read models).
 
 ---
 
@@ -167,7 +185,7 @@ cp .env.example .env         # opcional: ajustar GWAN_SOCIAL_HOST e VITE_*
 docker compose -f docker-compose-production.yml up --build -d
 ```
 
-- **`GWAN_SOCIAL_HOST`**: domínio na regra Traefik `Host(\`…\`)`; omissão: `social.gwan.com.br`.
+- **`GWAN_SOCIAL_HOST`**: domínio na regra Traefik `Host(\`…\`)`; omissão: `social.gwan.com.br`. URL pública completa: **https://social.gwan.com.br/**.
 - **`VITE_*`**: definir no `.env` **antes** do build — variáveis de **build-time** do Vite (URL da API futura, nome da app, versão).
 
 ### Desenvolvimento local (Node)

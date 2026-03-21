@@ -44,7 +44,7 @@ apps/web/
 │   │   ├── profile/        # ProfileFeedLayout, sidebar, momentos
 │   │   └── social/         # NavBar, FeedPostList, Leaderboard, cartões editoriais
 │   ├── contexts/           # Auth, sessão, rascunho de post
-│   ├── data/               # mocks, tipos, coleções sociais
+│   ├── data/               # tipos, adapters; seed único em `fixtures/*.json` (`schemaVersion`)
 │   └── lib/                # navegação, ranking, utilitários
 └── …
 ```

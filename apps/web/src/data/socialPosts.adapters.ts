@@ -1,12 +1,10 @@
 import type { EditorialPost, Post, UserProfile } from '@/data/legacyFeed.types'
+import type { FixtureDomain, FixtureUser } from '@/data/fixtures/fixtureDomain.types'
 import type { SocialAuthor, SocialPost } from '@/data/socialPost.types'
+import { fixtures } from '@/data/fixtures/loadFixtures'
 
-const IMG_MAIN =
-  'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=1200&auto=format&fit=crop'
-const IMG_SIDE =
-  'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=800&auto=format&fit=crop'
-const AVATAR_FALLBACK =
-  'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop&crop=face'
+const { main: IMG_MAIN, side: IMG_SIDE, avatarFallback: AVATAR_FALLBACK } =
+  fixtures.ui.fallbackEditorialImages
 
 function scoreToTier(score: number): UserProfile['tier'] {
   if (score >= 4.5) return 'elite'
@@ -44,8 +42,8 @@ export function socialPostToEditorial(sp: SocialPost): EditorialPost {
 
   const peopleLabel =
     sp.people.length > 0
-      ? `People ${sp.people.map((p) => p.name).join(', ')}`
-      : `People ${sp.author.name}`
+      ? `Pessoas ${sp.people.map((p) => p.name).join(', ')}`
+      : `Pessoas ${sp.author.name}`
 
   return {
     id: sp.id,
@@ -98,6 +96,21 @@ export function socialAuthorToUserProfile(a: SocialAuthor): UserProfile {
     bio: a.headline,
     tier: scoreToTier(a.score),
   }
+}
+
+/** Utilizador do fixture normalizado → perfil de UI (reputação no contexto `social`). */
+export function userProfileFromFixtureUser(u: FixtureUser, domain: FixtureDomain): UserProfile {
+  const score =
+    domain.userReputationContexts.find((c) => c.userId === u.id && c.contextType === 'social')
+      ?.score ?? 4
+  return socialAuthorToUserProfile({
+    id: u.id,
+    name: u.displayName,
+    username: u.username,
+    avatarUrl: u.avatarUrl,
+    score,
+    headline: u.bio ?? u.headline,
+  })
 }
 
 function collectAuthors(sp: SocialPost): SocialAuthor[] {

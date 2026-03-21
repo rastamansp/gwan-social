@@ -13,6 +13,8 @@ Build multi-stage ([docker/Dockerfile](../../docker/Dockerfile)): dependências 
 | **Local** | [docker-compose.yml](../../docker-compose.yml) | Porta host `${WEB_PORT:-8080}` → 80 no container |
 | **Produção (Traefik)** | [docker-compose-production.yml](../../docker-compose-production.yml) | Rede Docker externa `gwan`; host público via `GWAN_SOCIAL_HOST` (`.env`); TLS e entrypoint conforme Traefik do ambiente |
 
+**URL base pública da web (produção):** https://social.gwan.com.br/ — alinhada ao valor por omissão de `GWAN_SOCIAL_HOST` em [.env.example](../../.env.example).
+
 Healthcheck HTTP: `GET /health` (Nginx). Variáveis de build: `VITE_*` no `docker build` — ver [environment-strategy.md](environment-strategy.md).
 
 ```mermaid
