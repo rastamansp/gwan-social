@@ -4,10 +4,10 @@
 
 Convenções **mínimas** para NestJS, Python, React e React Native no monorepo **gwan-social**, alinhadas a Clean Architecture e aos [princípios de arquitetura](../00-governance/architecture-principles.md).
 
-## NestJS (`apps/api-node`)
+## NestJS (`apps/api`)
 
-- **Módulos por capacidade** (`identity`, `profile`, `interaction`, `rating`, `reputation`).  
-- **Camadas por feature:**  
+- **As-is:** módulos globais `ApplicationModule`, `InfrastructureModule`, `ApiV1Module`; casos de uso em `application/use-cases/`; porto `FixtureReadModelPort` + adaptador em `infrastructure/fixtures/`; controladores em `presentation/http/v1/`.  
+- **Alvo (por capacidade):** módulos por domínio (`identity`, `profile`, `interaction`, `rating`, `reputation`) com camadas por feature:  
   - `domain/` — entidades, value objects, interfaces de repositório  
   - `application/` — casos de uso (classes `*UseCase` ou `*Service` de aplicação)  
   - `infrastructure/` — TypeORM/Prisma/adapters, publicadores de fila  

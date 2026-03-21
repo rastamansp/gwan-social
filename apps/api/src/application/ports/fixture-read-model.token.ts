@@ -1,0 +1,1 @@
+export const FIXTURE_READ_MODEL_PORT = Symbol('FIXTURE_READ_MODEL_PORT')

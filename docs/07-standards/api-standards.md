@@ -2,14 +2,36 @@
 
 ## Objetivo
 
-Padronizar a API HTTP exposta pelo **`api-node`** para `web` e `mobile`.
+Padronizar a API HTTP exposta por **`apps/api`** (NestJS) para `web` e `mobile`.
 
 ## Base URL e versionamento
 
-- Prefixo: `/v1` para todos os recursos estáveis.  
-- **Quebra compatível:** novo prefixo `/v2` ou negociação por header — documentar em ADR.
+- **Prefixo global (implementado):** `/api/v1` para recursos REST estáveis da API Nest (ex.: `GET /api/v1/health`).  
+- **Alvo normativo:** manter um único prefixo versionado por release; **quebra compatível:** novo segmento (`/api/v2`, etc.) ou negociação por header — documentar em ADR.
 
-## Formato de resposta de sucesso
+## Autenticação (as-implemented)
+
+- **Registo / login:** `POST /api/v1/auth/register`, `POST /api/v1/auth/login` — passwords com Argon2id; respostas incluem `accessToken`, `refreshToken`, `expiresIn`, `tokenType`.  
+- **Refresh / logout:** `POST /api/v1/auth/refresh`, `POST /api/v1/auth/logout` (corpo JSON com `refreshToken`).  
+- **Sessão:** `GET /api/v1/me` com cabeçalho `Authorization: Bearer <accessToken>` devolve o perfil do utilizador na base; sem token, `401` salvo se `AUTH_FIXTURE_ME_FALLBACK=true` (modo demo com fixture).  
+- **Segredos:** `JWT_SECRET` (mín. 32 caracteres em produção), tempos em `JWT_ACCESS_EXPIRES_SEC` / `JWT_REFRESH_EXPIRES_SEC` — ver [`apps/api/.env.example`](../../apps/api/.env.example).  
+- **Rate limit:** rotas `/auth/*` com limite mais estrito (throttle global + override por controlador).
+
+## Descoberta e documentação (as-is)
+
+| Artefato | Caminho |
+|----------|---------|
+| **OpenAPI JSON** | `GET /api/openapi.json` |
+| **Swagger UI** | `GET /api/` (redirecionamento de `/api` para barra final) |
+| **Raiz** | `GET /` — JSON com links (`swaggerUi`, `openApiJson`, `health`, `fixturesPath`) |
+
+Gerado com **`@nestjs/swagger`** em `apps/api`; publicar artefato por release quando a API for de produção.
+
+## As-is vs alvo normativo (envelope e erros)
+
+A API de **fixtures** (`apps/api`) pode devolver **JSON direto** (ex.: `{ "ok": true }`, listas paginadas) e erros simples (`{ "error": "…" }`) **sem** o envelope abaixo até alinhamento explícito com clientes. O **alvo** para API transacional:
+
+## Formato de resposta de sucesso (alvo)
 
 ```json
 {
@@ -18,7 +40,7 @@ Padronizar a API HTTP exposta pelo **`api-node`** para `web` e `mobile`.
 }
 ```
 
-## Erros
+## Erros (alvo)
 
 ```json
 {
@@ -38,12 +60,13 @@ Padronizar a API HTTP exposta pelo **`api-node`** para `web` e `mobile`.
 
 | Abordagem | Status |
 |-----------|--------|
-| **JWT Bearer** (`Authorization: Bearer <token>`) | **Recomendada** no MVP |
+| **JWT Bearer** (`Authorization: Bearer <token>`) | **Recomendada** no MVP (ainda não na API de fixtures) |
 | OIDC / OAuth2 com provedor externo | Alternativa futura (ADR) |
 
 ## Paginação
 
-- `?cursor=` ou `?page=&page_size=` — escolher um padrão na ETAPA 2 e manter consistente em todos os list endpoints.
+- **As-is:** `?cursor=` e `?limit=` nos list endpoints da API de fixtures — ver OpenAPI.  
+- **Alvo:** um padrão único (`cursor` ou `page`/`page_size`) em todos os list endpoints; consolidar com ADR se necessário.
 
 ## Idempotência
 
@@ -51,4 +74,4 @@ Padronizar a API HTTP exposta pelo **`api-node`** para `web` e `mobile`.
 
 ## OpenAPI
 
-- Gerar especificação OpenAPI a partir do Nest (Swagger) na ETAPA 2; publicar artefato por release.
+- **Implementado** para `apps/api` (Nest Swagger). Incluir artefato versionado em releases quando sair do modo demonstração.

@@ -9,39 +9,57 @@ Listar casos de uso com **ID estável** para rastreabilidade na aplicação **Gw
 - `UC-<DOMÍNIO>-NN` — ex.: `UC-RAT-01`  
 - Estados: **Planejado** | **MVP** | **Em evolução** | **Depreciado**
 
+## API de demonstração (`apps/api`)
+
+**NestJS** expõe leitura do mesmo **read model** que a web obtém a partir de `gwan-social.fixtures.json` (sem PostgreSQL, sem JWT, sem escrita). Prefixo REST: **`/api/v1`**. OpenAPI: **`/api/openapi.json`**; Swagger UI: **`/api/`**. Ver [api-standards.md](../07-standards/api-standards.md).
+
+| Método | Caminho (após `/api/v1`) | Notas |
+|--------|---------------------------|--------|
+| GET | `health` | Health check |
+| GET | `feed` | Feed principal; `limit`, `cursor` |
+| GET | `posts/nearby` | Posts próximos (demo); `limit`, `cursor` |
+| GET | `posts/:postId` | Detalhe de post; 404 se inexistente |
+| GET | `me` | Utilizador de sessão demo no fixture; 404 se inválido |
+| GET | `users/:userId` | Perfil público; 404 se inexistente |
+| GET | `users/:userId/posts` | Posts do autor; paginação |
+| GET | `users/:userId/ratings/received` | Avaliações recebidas; paginação |
+| GET | `users/:userId/friends` | IDs de amigos; paginação |
+
+**Rastreabilidade fraca com UCs:** leitura de perfil/listas aproxima **UC-PROF-01** e **UC-RAT-02** apenas como **pré-visualização de contrato**, não substitui privacidade, autenticação nem persistência. **UC-AUTH-01**, **UC-AUTH-02** e escritas (**UC-PROF-02**, **UC-INT-01**, **UC-RAT-01**, etc.) **não** são satisfeitas por esta API.
+
 ## Autenticação e identidade
 
 | ID | Nome | Ator | Pré-condições | Pós-condições | Serviços |
 |----|------|------|---------------|---------------|----------|
-| UC-AUTH-01 | Registrar usuário | Visitante | Email único válido | Conta e perfil mínimo criados | `api-node`, PostgreSQL |
-| UC-AUTH-02 | Autenticar (login) | Usuário | Conta ativa | Tokens de sessão emitidos | `api-node`, Redis opcional |
+| UC-AUTH-01 | Registrar usuário | Visitante | Email único válido | Conta e perfil mínimo criados | `apps/api`, PostgreSQL |
+| UC-AUTH-02 | Autenticar (login) | Usuário | Conta ativa | Tokens de sessão emitidos | `apps/api`, Redis opcional |
 
 ### Protótipo web (sem API)
 
-As rotas `/login` e `/register` em **`apps/web`** persistem sessão e contas de demonstração em **`localStorage`**. Isso **não** satisfaz **UC-AUTH-01** nem **UC-AUTH-02** até existirem persistência em PostgreSQL, política de email único e emissão de tokens na **`api-node`**. Objetivo do protótipo: UX, demos e evolução incremental da interface.
+As rotas `/login` e `/register` em **`apps/web`** persistem sessão e contas de demonstração em **`localStorage`**. Isso **não** satisfaz **UC-AUTH-01** nem **UC-AUTH-02** até existirem persistência em PostgreSQL, política de email único e emissão de tokens em **`apps/api`**. Objetivo do protótipo: UX, demos e evolução incremental da interface.
 
 ## Perfil
 
 | ID | Nome | Ator | Pré-condições | Pós-condições | Serviços |
 |----|------|------|---------------|---------------|----------|
-| UC-PROF-01 | Visualizar perfil | Usuário / público | Perfil existe | Dados conforme privacidade | `api-node` |
-| UC-PROF-02 | Atualizar próprio perfil | Usuário autenticado | — | Perfil atualizado | `api-node` |
+| UC-PROF-01 | Visualizar perfil | Usuário / público | Perfil existe | Dados conforme privacidade | `apps/api` |
+| UC-PROF-02 | Atualizar próprio perfil | Usuário autenticado | — | Perfil atualizado | `apps/api` |
 
 ## Interações e avaliações
 
 | ID | Nome | Ator | Pré-condições | Pós-condições | Serviços |
 |----|------|------|---------------|---------------|----------|
-| UC-INT-01 | Registrar interação | Usuário autenticado | Regras de produto satisfeitas | Interação persistida | `api-node` |
-| UC-RAT-01 | Submeter avaliação | Avaliador | elegibilidade (ex.: pós-interação) | Rating persistido; job de recálculo enfileirado | `api-node`, Redis |
-| UC-RAT-02 | Listar avaliações recebidas/enviadas | Usuário | — | Lista paginada | `api-node` |
+| UC-INT-01 | Registrar interação | Usuário autenticado | Regras de produto satisfeitas | Interação persistida | `apps/api` |
+| UC-RAT-01 | Submeter avaliação | Avaliador | elegibilidade (ex.: pós-interação) | Rating persistido; job de recálculo enfileirado | `apps/api`, Redis |
+| UC-RAT-02 | Listar avaliações recebidas/enviadas | Usuário | — | Lista paginada | `apps/api` |
 
 ## Reputação
 
 | ID | Nome | Ator | Pré-condições | Pós-condições | Serviços |
 |----|------|------|---------------|---------------|----------|
 | UC-REP-01 | Processar recálculo de reputação | Sistema | Mensagem válida na fila | Snapshots/histórico atualizados | `worker-python`, PostgreSQL |
-| UC-REP-02 | Consultar reputação atual | Usuário / público | Snapshots existentes | Exibição de score + metadados | `api-node` |
-| UC-REP-03 | Consultar histórico de score | Usuário autorizado | Histórico existe | Série temporal | `api-node` |
+| UC-REP-02 | Consultar reputação atual | Usuário / público | Snapshots existentes | Exibição de score + metadados | `apps/api` |
+| UC-REP-03 | Consultar histórico de score | Usuário autorizado | Histórico existe | Série temporal | `apps/api` |
 
 ## Operações e extensões
 
@@ -53,7 +71,7 @@ As rotas `/login` e `/register` em **`apps/web`** persistem sessão e contas de 
 
 | ID | Nome | Ator | Pré-condições | Pós-condições | Serviços |
 |----|------|------|---------------|---------------|----------|
-| UC-ADM-01 | Acessar funções administrativas mínimas (painel web) | Administrador | Conta com papel admin; autenticação válida | Operações permitidas por política (lista evolutiva) | `api-node`, `web` |
+| UC-ADM-01 | Acessar funções administrativas mínimas (painel web) | Administrador | Conta com papel admin; autenticação válida | Operações permitidas por política (lista evolutiva) | `apps/api`, `web` |
 
 Escopo exato do painel (métricas, usuários, auditoria) evolui por release; manter alinhamento com [business-capabilities.md](../02-business-architecture/business-capabilities.md).
 
@@ -61,7 +79,7 @@ Escopo exato do painel (métricas, usuários, auditoria) evolui por release; man
 
 | ID | Nome | Ator | Pré-condições | Pós-condições | Serviços |
 |----|------|------|---------------|---------------|----------|
-| UC-MOD-01 | Registrar denúncia | Usuário | — | Denúncia registrada (futuro) | `api-node`, fila |
+| UC-MOD-01 | Registrar denúncia | Usuário | — | Denúncia registrada (futuro) | `apps/api`, fila |
 
 ---
 

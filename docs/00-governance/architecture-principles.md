@@ -46,7 +46,7 @@ Definir regras **práticas e verificáveis** para o monorepo **gwan-social** (pr
 ## Anti-padrões (proibidos)
 
 - Lógica de negócio em controllers, pipes de validação que **codificam regra de domínio** além de formato, componentes React/React Native de tela, ou scripts SQL soltos na aplicação.  
-- Chamadas diretas de `api-node` para bibliotecas de domínio do Python **sem** contrato de fila/API documentado.  
+- Chamadas diretas de **`apps/api`** para bibliotecas de domínio do Python **sem** contrato de fila/API documentado.  
 - Duplicar fórmulas de reputação em frontend e backend; **fonte da verdade** do cálculo pesado no worker Python, com regras de leitura documentadas.
 
 ## Relação com `.cursorrules`

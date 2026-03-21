@@ -2,18 +2,18 @@
 
 ## Objetivo
 
-Definir como **`api-node` (NestJS)** e **`worker-python` (FastAPI/workers)** se integram com **PostgreSQL**, **Redis** e **contratos compartilhados**, com foco em filas assíncronas e evolução por versão de payload.
+Definir como **`apps/api` (NestJS)** e **`worker-python` (FastAPI/workers)** se integram com **PostgreSQL**, **Redis** e **contratos compartilhados**, com foco em filas assíncronas e evolução por versão de payload.
 
 ## Visão geral
 
 ```mermaid
 sequenceDiagram
   participant C as Client_web_mobile
-  participant API as api-node
+  participant API as apps_api
   participant R as Redis
   participant PG as PostgreSQL
   participant W as worker-python
-  C->>API: REST_/v1_
+  C->>API: REST_/api/v1_
   API->>PG: transacao_fatos
   API->>R: enfileirar_job_reputacao
   W->>R: consumir_mensagem
@@ -32,7 +32,7 @@ sequenceDiagram
 
 ### Opção recomendada (MVP)
 
-- **Produção de jobs:** `api-node` usando **BullMQ** sobre Redis.  
+- **Produção de jobs:** **`apps/api`** usando **BullMQ** sobre Redis.  
 - **Consumo:** `worker-python` via uma das estratégias:
   - **A)** Consumidor que lê a mesma estrutura Redis compatível com BullMQ (documentar formato), ou  
   - **B)** Pequeno **bridge** (processo Node ou sidecar) que repassa para Stream/lista consumida pelo Python.

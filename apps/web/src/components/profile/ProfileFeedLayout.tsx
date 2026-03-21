@@ -1,10 +1,12 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ProfileMomentCard } from '@/components/profile/ProfileMomentCard'
 import { ProfileFeedSidebar } from '@/components/profile/ProfileFeedSidebar'
 import { useAuth } from '@/contexts/AuthContext'
 import { useSessionUser } from '@/contexts/SessionUserContext'
 import type { UserProfile } from '@/data/mockUsers'
+import type { Post } from '@/data/legacyFeed.types'
+import type { ProfileRatedEntry } from '@/data/fixture-types'
 import {
   buildProfileFriendsList,
   featuredMomentRating,
@@ -15,7 +17,15 @@ import {
   profileRatedEntries,
   users,
 } from '@/data/mockUsers'
-import { formatRelativeTime } from '@/data/socialPosts.adapters'
+import { formatRelativeTime, socialPostToLegacyPost } from '@/data/socialPosts.adapters'
+import { isApiEnabled } from '@/lib/api/config'
+import {
+  fetchUserFriends,
+  fetchUserPosts,
+  fetchUserProfile,
+  fetchUserRatingsReceived,
+} from '@/lib/api/endpoints'
+import { mapApiPublicUserToProfile } from '@/lib/api/mapApiUserToProfile'
 import { loginPath, userCreatePostPath, userProfileEditPath } from '@/lib/routes'
 import { cn } from '@/lib/utils'
 
@@ -54,27 +64,135 @@ interface ProfileFeedLayoutProps {
   profileUserId?: string
 }
 
+type ApiProfileBundle = {
+  posts: Post[]
+  ratings: ProfileRatedEntry[]
+  friends: UserProfile[]
+  dashboard: { photos: number; rated: number; friendsLabel: string }
+}
+
 export function ProfileFeedLayout({ profileUserId }: ProfileFeedLayoutProps) {
   const { isAuthenticated } = useAuth()
-  const { userId: sessionUserId, resolveUser } = useSessionUser()
+  const { userId: sessionUserId, resolveUser, registerApiUsers } = useSessionUser()
   const navigate = useNavigate()
   const location = useLocation()
   const [section, setSection] = useState<ProfileSection>('moments')
   const resolvedUserId = profileUserId ?? sessionUserId
+  const useApi = isApiEnabled()
+
+  const [apiBundle, setApiBundle] = useState<ApiProfileBundle | null>(null)
+  const [apiStatus, setApiStatus] = useState<'idle' | 'loading' | 'ok' | 'err'>('idle')
+
+  useEffect(() => {
+    if (!useApi) {
+      setApiBundle(null)
+      setApiStatus('idle')
+      return
+    }
+    let cancelled = false
+    setApiStatus('loading')
+    setApiBundle(null)
+
+    ;(async () => {
+      try {
+        const [prof, postsPage, ratingsPage, friendsPage] = await Promise.all([
+          fetchUserProfile(resolvedUserId),
+          fetchUserPosts(resolvedUserId, { limit: 80 }),
+          fetchUserRatingsReceived(resolvedUserId, { limit: 50 }),
+          fetchUserFriends(resolvedUserId, { limit: 100 }),
+        ])
+        const me = mapApiPublicUserToProfile(prof)
+        const friendIds = friendsPage.items
+        const friendDtos = await Promise.all(
+          friendIds.map((id) => fetchUserProfile(id).catch(() => null)),
+        )
+        const friends = friendDtos
+          .filter((x): x is NonNullable<typeof x> => x != null)
+          .map((d) => mapApiPublicUserToProfile(d))
+
+        const reviewerIds = [...new Set(ratingsPage.items.map((r) => r.reviewerId))]
+        const reviewerDtos = await Promise.all(
+          reviewerIds.map((id) => fetchUserProfile(id).catch(() => null)),
+        )
+        const reviewers = reviewerDtos
+          .filter((x): x is NonNullable<typeof x> => x != null)
+          .map((d) => mapApiPublicUserToProfile(d))
+
+        registerApiUsers([me, ...friends, ...reviewers])
+
+        const legacyPosts = postsPage.items.map((sp) => socialPostToLegacyPost(sp))
+        const photoCount = legacyPosts.filter((p) => Boolean(p.image)).length
+        const ratedCount = ratingsPage.items.length
+        const friendsCount = friendsPage.items.length
+        const dashboard = {
+          photos: Math.max(photoCount, 0),
+          rated: Math.max(ratedCount, 0),
+          friendsLabel:
+            friendsCount >= 1000 ? `${(friendsCount / 1000).toFixed(1)}k` : String(friendsCount),
+        }
+
+        if (!cancelled) {
+          setApiBundle({
+            posts: legacyPosts,
+            ratings: ratingsPage.items,
+            friends,
+            dashboard,
+          })
+          setApiStatus('ok')
+        }
+      } catch {
+        if (!cancelled) {
+          setApiBundle(null)
+          setApiStatus('err')
+        }
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [useApi, resolvedUserId, registerApiUsers])
+
   const profileUser = resolveUser(resolvedUserId)
   const isOwnProfile = resolvedUserId === sessionUserId
   const canManageProfile = isOwnProfile && isAuthenticated
 
-  const dashboardStats = useMemo(
+  const mockDashboardStats = useMemo(
     () => getProfileDashboardStatsForUser(resolvedUserId),
     [resolvedUserId],
   )
-  const userPosts = useMemo(() => getProfilePostsForUser(resolvedUserId), [resolvedUserId])
-
-  const profileFriends = useMemo(
+  const mockUserPosts = useMemo(() => getProfilePostsForUser(resolvedUserId), [resolvedUserId])
+  const mockProfileFriends = useMemo(
     () => buildProfileFriendsList(users, resolvedUserId),
     [resolvedUserId],
   )
+
+  const dashboardStats = useApi && apiBundle ? apiBundle.dashboard : mockDashboardStats
+  const userPosts = useApi && apiBundle ? apiBundle.posts : mockUserPosts
+  const profileFriends = useApi && apiBundle ? apiBundle.friends : mockProfileFriends
+  const ratedEntries = useApi && apiBundle ? apiBundle.ratings : profileRatedEntries
+
+  if (useApi && apiStatus === 'loading' && !profileUser && !users.find((u) => u.id === resolvedUserId)) {
+    return (
+      <div className="mx-auto max-w-7xl px-3 py-12 text-center sm:px-4 sm:py-16 md:px-8">
+        <p className="font-display text-lg text-neutral-600">A carregar perfil…</p>
+      </div>
+    )
+  }
+
+  if (useApi && apiStatus === 'err' && !users.find((u) => u.id === resolvedUserId) && !profileUser) {
+    return (
+      <div className="mx-auto max-w-7xl px-3 py-12 text-center sm:px-4 sm:py-16 md:px-8">
+        <p className="font-display text-lg text-neutral-600">Perfil não encontrado na API.</p>
+        <Link
+          to="/"
+          className="mt-4 inline-block text-sm font-medium text-primary underline-offset-2 hover:underline"
+        >
+          Voltar ao feed
+        </Link>
+      </div>
+    )
+  }
 
   if (!profileUser) {
     return (
@@ -98,6 +216,11 @@ export function ProfileFeedLayout({ profileUserId }: ProfileFeedLayoutProps) {
 
   return (
     <div className="mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6 md:px-8">
+      {useApi && apiStatus === 'err' ? (
+        <p className="mb-4 rounded-xl bg-amber-50 px-4 py-2 text-center text-xs text-amber-900 ring-1 ring-amber-200/80">
+          Não foi possível carregar o perfil na API; a mostrar dados mock locais.
+        </p>
+      ) : null}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         <main className="lg:col-span-8">
           <div
@@ -338,14 +461,16 @@ export function ProfileFeedLayout({ profileUserId }: ProfileFeedLayoutProps) {
                 <p className="text-xs uppercase tracking-[0.25em] text-neutral-400">
                   Avaliações recebidas
                 </p>
-                {canManageProfile ? (
+                {canManageProfile || (useApi && apiBundle) ? (
                   <>
                     <p className="mt-2 text-sm text-neutral-600">
-                      Notas e comentários sobre os teus momentos ou sobre o teu perfil (mock).
+                      {useApi && apiBundle
+                        ? 'Notas e comentários a partir da API (primeira página).'
+                        : 'Notas e comentários sobre os teus momentos ou sobre o teu perfil (mock).'}
                     </p>
                     <ul className="mt-6 space-y-4">
-                      {profileRatedEntries.map((entry) => {
-                        const reviewer = users.find((u) => u.id === entry.reviewerId)
+                      {ratedEntries.map((entry) => {
+                        const reviewer = resolveUser(entry.reviewerId) ?? users.find((u) => u.id === entry.reviewerId)
                         if (!reviewer) return null
                         return (
                           <li

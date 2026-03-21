@@ -6,6 +6,10 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import { ApiHttpError } from '@/lib/api/client'
+import { clearAuthTokens, getRefreshToken, setAuthTokens } from '@/lib/api/authStorage'
+import { isApiEnabled } from '@/lib/api/config'
+import { fetchLogin, fetchLogout, fetchRegister } from '@/lib/api/endpoints'
 
 const STORAGE_KEY = 'gwan-social-auth-v1'
 const ACCOUNTS_KEY = 'gwan-social-local-accounts-v1'
@@ -80,9 +84,16 @@ function validateUsername(raw: string) {
   return u
 }
 
-function validatePassword(password: string) {
+function validatePasswordLogin(password: string) {
   if (password.length < 6) {
     throw new Error('A senha deve ter pelo menos 6 caracteres.')
+  }
+}
+
+function validatePasswordRegister(password: string, apiMode: boolean) {
+  const min = apiMode ? 8 : 6
+  if (password.length < min) {
+    throw new Error(`A senha deve ter pelo menos ${min} caracteres.`)
   }
 }
 
@@ -94,12 +105,37 @@ type AuthContextValue = AuthState & {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
+function toUserMessage(err: unknown): string {
+  if (err instanceof ApiHttpError) return err.message
+  if (err instanceof Error) return err.message
+  return 'Operação falhou.'
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>(readStored)
 
   const login = useCallback(async (username: string, password: string) => {
     const u = validateUsername(username)
-    validatePassword(password)
+    validatePasswordLogin(password)
+
+    if (isApiEnabled()) {
+      try {
+        const tokens = await fetchLogin({ username: u, password })
+        setAuthTokens(tokens)
+        const next: AuthState = { isAuthenticated: true, username: u }
+        setState(next)
+        writeStored(next)
+        return
+      } catch (err) {
+        if (u === DEMO_TEST_USER && password === DEMO_TEST_PASSWORD) {
+          const next: AuthState = { isAuthenticated: true, username: DEMO_TEST_USER }
+          setState(next)
+          writeStored(next)
+          return
+        }
+        throw new Error(toUserMessage(err))
+      }
+    }
 
     if (u === DEMO_TEST_USER && password === DEMO_TEST_PASSWORD) {
       const next: AuthState = { isAuthenticated: true, username: DEMO_TEST_USER }
@@ -122,6 +158,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const logout = useCallback(() => {
+    if (isApiEnabled()) {
+      const refresh = getRefreshToken()
+      if (refresh) {
+        void fetchLogout(refresh).catch(() => {
+          /* ignorar rede */
+        })
+      }
+      clearAuthTokens()
+    }
     const next: AuthState = { isAuthenticated: false, username: null }
     setState(next)
     writeStored(next)
@@ -133,10 +178,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error('O nome deve ter pelo menos 2 caracteres.')
     }
     const u = validateUsername(username)
-    validatePassword(password)
+    const apiMode = isApiEnabled()
+    validatePasswordRegister(password, apiMode)
 
     if (u === DEMO_TEST_USER) {
       throw new Error(`O utilizador "${DEMO_TEST_USER}" é reservado para a conta de teste. Escolhe outro.`)
+    }
+
+    if (apiMode) {
+      try {
+        const tokens = await fetchRegister({ displayName: n, username: u, password })
+        setAuthTokens(tokens)
+        const next: AuthState = { isAuthenticated: true, username: u }
+        setState(next)
+        writeStored(next)
+        return
+      } catch (err) {
+        throw new Error(toUserMessage(err))
+      }
     }
 
     const accounts = readAccounts()

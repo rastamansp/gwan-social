@@ -17,6 +17,10 @@ Interface **React** + **TypeScript** + **Tailwind CSS v4** (plugin Vite `@tailwi
 
 Na raiz do monorepo: `npm run dev:web`.
 
+### Integração com a API (`/api/v1`)
+
+Opcional: copiar [`.env.example`](.env.example) para **`.env`** e definir **`VITE_API_URL=http://localhost:4000/api/v1`** (URL completa até `/api/v1`). Com a variável vazia, mantém-se o modo **fixtures/mocks**. Com a API Nest a correr (`npm run dev:api` na raiz do monorepo), feed, post, próximo, perfil e **`GET /me`** passam a usar HTTP; as abas **Pessoas** e **Ranking** continuam em mock (sem `GET /users`). CORS: origem do Vite deve estar em `CORS_ORIGINS` na API. Detalhes: [README do monorepo](../../README.md#integracao-spa-api).
+
 ## SPA (Single Page Application)
 
 - A app usa **React Router** (`BrowserRouter`): uma única carga de `index.html` e navegação no cliente (sem recarregar a página ao mudar de rota).
@@ -30,8 +34,8 @@ Na raiz do monorepo: `npm run dev:web`.
 | `/`             | **Feed** (`?tab=feed` ou raiz): `FeedPostList` + `SocialPostCard`. **Meu perfil** (`?tab=profile`): `ProfileFeedLayout` (requer sessão). **Pessoas** (`?tab=pessoas`). **Ranking** `?tab=ranking&rank=` (`reputation`, `volume`, `tier`, `engagement`) |
 | `/login`        | Entrada; conta demo `demo` / `demo123` (`AuthContext` + `localStorage`) |
 | `/register`     | Registo local (mock), contas guardadas no browser |
-| `/nearby`       | **Próximo** — postagens na área (mock + distância) |
-| `/post/:postId` | Detalhe editorial (galeria, estrelas 1–5 e comentários em mock) |
+| `/nearby`       | **Próximo** — postagens na área (mock ou API `posts/nearby` com `VITE_API_URL`) |
+| `/post/:postId` | Detalhe editorial (mock ou API com `VITE_API_URL`) |
 | `/user/:userId` | Perfil público |
 | `/user/:userId/edit` | Editar perfil (mock, alinhado à sessão) |
 | `/user/:userId/create-post` | Wizard nova postagem: `content` → `media` → `review` |
@@ -55,6 +59,7 @@ Na raiz do monorepo: `npm run dev:web`.
 - `src/data/socialPosts.index.ts` — consultas (`getTrendingSocialPosts`, `getFeaturedSocialPost`, …)
 - `src/data/legacyFeed.types.ts` — `Post`, `EditorialPost`, `UserProfile` usados pelos componentes
 - `src/data/mockUsers.ts` — `posts`, `users`, `editorialByPostId` derivados da coleção social + stats de perfil/sidebar (literais do JSON)
+- `src/lib/api/` — `getApiBaseUrl`, cliente `fetch` (`apiGet`), endpoints `/api/v1` e mapeamento de utilizador da API → `UserProfile`
 - Alias TypeScript/Vite: `@/` → `src/`
 
 Regras de negócio e chamadas à API: [`docs/07-standards/coding-standards.md`](../../docs/07-standards/coding-standards.md) e [`.cursorrules`](../../.cursorrules).

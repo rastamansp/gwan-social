@@ -18,7 +18,7 @@ A **definição funcional** (problema, atores, módulos, princípios de reputaç
 
 ## Qualidades-alvo
 
-- **Manutenibilidade:** limites claros entre `api-node`, `worker-python`, `web`, `mobile`.  
+- **Manutenibilidade:** limites claros entre **`apps/api`**, `worker-python`, `web`, `mobile`.  
 - **Evoluibilidade:** novos contextos de reputação e regras no worker sem reescrever clientes.  
 - **Auditabilidade:** histórico de score e decisões documentadas (ADRs).  
 - **Segurança em camadas:** autenticação na API; princípio do menor privilégio em workers.
@@ -39,7 +39,7 @@ A **definição funcional** (problema, atores, módulos, princípios de reputaç
 
 | Opção | Prós | Contras |
 |-------|------|---------|
-| **A — Recomendada:** **BullMQ** no `api-node` para produtor; **worker Python** consome via padrão acordado (bridge: script Node leitor ou **Redis Streams** como transport comum) | Ecossistema maduro no Node; retries; métricas | Dois runtimes exigem **contrato de mensagem** rigoroso em `shared-types` |
+| **A — Recomendada:** **BullMQ** em **`apps/api`** para produtor; **worker Python** consome via padrão acordado (bridge: script Node leitor ou **Redis Streams** como transport comum) | Ecossistema maduro no Node; retries; métricas | Dois runtimes exigem **contrato de mensagem** rigoroso em `shared-types` |
 | B — Apenas Redis Streams em ambos | Menos dependências de alto nível | Mais código manual de consumo/retry |
 | C — Fila externa (SQS/Rabbit) | Durabilidade forte | Custo e ops; ADR para introduzir |
 
@@ -58,7 +58,7 @@ A **definição funcional** (problema, atores, módulos, princípios de reputaç
 
 | Opção | Prós | Contras |
 |-------|------|---------|
-| **A — Recomendada:** **JWT** (access/refresh) emitido pelo `api-node` no MVP | Simples, controle total | Responsabilidade de segurança na API |
+| **A — Recomendada:** **JWT** (access/refresh) emitido por **`apps/api`** no MVP | Simples, controle total | Responsabilidade de segurança na API |
 | B — OIDC (Keycloak/Auth0/Cognito) | SSO e políticas centralizadas | Infra e config adicionais |
 
 **Recomendação:** **A** para MVP; migrar para **B** com ADR se o produto exigir SSO.
@@ -74,7 +74,7 @@ flowchart TB
   subgraph system [GwanSocialReputation]
     W[web_React]
     M[mobile_RN]
-    API[api-node_NestJS]
+    API[apps_api_NestJS]
     PY[worker-python_FastAPI]
     PG[(PostgreSQL)]
     R[(Redis)]

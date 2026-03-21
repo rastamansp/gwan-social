@@ -1,12 +1,12 @@
-# Gwan Social Reputation (gwan-social) — regras de implementação (baseline docs v2.0)
+# Gwan Social Reputation (gwan-social) — regras de implementação (baseline docs v2.2)
 
-Produto **Gwan Social Reputation**; repositório monorepo **pnpm** (`pnpm-workspace.yaml` na raiz). Documentação canônica: **`/docs`**. Definição funcional: `docs/01-architecture-vision/application-definition.md`. Antes de mudanças arquiteturais relevantes, ler `docs/README.md`, `docs/00-governance/architecture-principles.md`, `docs/01-architecture-vision/application-definition.md` e `docs/01-architecture-vision/vision.md`.
+Produto **Gwan Social Reputation**; repositório monorepo **npm** (workspaces na raiz; `pnpm` opcional). Documentação canônica: **`/docs`**. Definição funcional: `docs/01-architecture-vision/application-definition.md`. Antes de mudanças arquiteturais relevantes, ler `docs/README.md`, `docs/00-governance/architecture-principles.md`, `docs/01-architecture-vision/application-definition.md` e `docs/01-architecture-vision/vision.md`.
 
 ---
 
 ## 1. Escopo do repositório e módulos lógicos
 
-- Apps: `apps/api-node` (NestJS), `apps/worker-python` (FastAPI + workers), `apps/web` (React — painel admin/social), `apps/mobile` (React Native).
+- Apps: `apps/api` (NestJS — hoje read model fixtures; alvo transacional), `apps/worker-python` (FastAPI + workers), `apps/web` (React — painel admin/social), `apps/mobile` (React Native).
 - Pacotes: `packages/shared-types` (contratos DTO/eventos), `packages/shared-utils` (funções puras, sem I/O).
 - Infra local: `infra/docker`. Não adicionar apps fora dessa estrutura sem atualizar `docs/07-standards/folder-structure.md` e registrar ADR se necessário.
 - Módulos de negócio (Identity, Profile, Interactions, Ratings, Reputation, Administration, etc.) mapeiam a bounded contexts em `docs/04-application-architecture/application-components.md`; novos módulos seguem a mesma separação domínio / aplicação / interfaces / infra.
@@ -42,7 +42,7 @@ Produto **Gwan Social Reputation**; repositório monorepo **pnpm** (`pnpm-worksp
 
 - Contrato de fila e DTOs públicos: alterar `packages/shared-types` quando o contrato TypeScript mudar; documentar payloads em `docs/04-application-architecture/integration-patterns.md`.
 - Incluir `schema_version` em mensagens de fila. Workers devem ser **idempotentes**.
-- Não acoplar cálculo pesado de reputação no `api-node`; processamento assíncrono no `worker-python` conforme docs.
+- Não acoplar cálculo pesado de reputação em `apps/api`; processamento assíncrono no `worker-python` conforme docs.
 - Evitar HTTP síncrono entre Node e Python para o núcleo de reputação no MVP (exceções exigem ADR).
 
 ---
@@ -54,10 +54,10 @@ Produto **Gwan Social Reputation**; repositório monorepo **pnpm** (`pnpm-worksp
 
 ---
 
-## 7. API HTTP (`api-node`)
+## 7. API HTTP (`apps/api`)
 
-- Prefixo `/v1`. Erros e sucesso conforme `docs/07-standards/api-standards.md`.
-- Autenticação padrão: JWT Bearer até decisão contrária por ADR.
+- Prefixo **`/api/v1`** (REST). OpenAPI em `/api/openapi.json`; Swagger UI em `/api/`. Erros e sucesso **alvo** conforme `docs/07-standards/api-standards.md` (API de fixtures pode divergir até alinhamento).
+- Autenticação padrão **alvo**: JWT Bearer até decisão contrária por ADR.
 
 ---
 

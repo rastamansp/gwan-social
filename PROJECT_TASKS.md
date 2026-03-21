@@ -9,4 +9,4 @@ Lista viva de etapas e tarefas **versionada no Git**.
 
 Atualize os checkboxes em `docs/06-delivery/project-tasks.md` ao avançar as etapas.
 
-**Último marco:** protótipo web completo (abas feed/perfil/pessoas/ranking, login/registo/editar perfil mock, wizard create-post, `/nearby`), Docker local + produção Traefik (`.env` / `GWAN_SOCIAL_HOST` / `VITE_*`), documentação TOGAF alinhada ao as-is — **integração `/v1` ainda pendente**.
+**Último marco:** protótipo web completo (abas feed/perfil/pessoas/ranking, login/registo/editar perfil mock, wizard create-post, `/nearby`), **`apps/api`** Nest (fixtures, **`/api/v1`**, OpenAPI/Swagger), Docker local + produção Traefik (`.env` / `GWAN_SOCIAL_HOST` / `VITE_*`), documentação TOGAF baseline **2.2** — **integração do `apps/web` com `/api/v1` ainda pendente**.

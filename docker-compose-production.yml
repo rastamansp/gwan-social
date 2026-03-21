@@ -18,7 +18,7 @@ services:
       no_cache: true
       pull: true
       args:
-        VITE_API_URL: ${VITE_API_URL:-http://localhost:3001/api}
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:4000/api/v1}
         VITE_APP_NAME: ${VITE_APP_NAME:-Gwan Social}
         VITE_APP_VERSION: ${VITE_APP_VERSION:-1.0.0}
     image: gwan-social-frontend:latest

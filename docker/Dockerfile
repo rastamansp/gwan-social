@@ -16,7 +16,8 @@ RUN npm install \
 FROM deps AS build
 COPY apps/web ./apps/web
 WORKDIR /app/apps/web
-ARG VITE_API_URL=http://localhost:3001/api
+# URL base completa até `/api/v1` (alinhado à API Nest em dev: `http://localhost:4000/api/v1`).
+ARG VITE_API_URL=http://localhost:4000/api/v1
 ARG VITE_APP_NAME=Gwan Social
 ARG VITE_APP_VERSION=0.0.0
 ENV VITE_API_URL=$VITE_API_URL \

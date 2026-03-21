@@ -1,0 +1,20 @@
+# API Gwan Social — a partir da raiz do monorepo:
+#   docker compose -f apps/api/docker-compose.yml up --build
+#
+# Ou a partir desta pasta (apps/api):
+#   docker compose up --build
+
+services:
+  api:
+    image: gwan-social-api:latest
+    build:
+      context: ../..
+      dockerfile: docker/Dockerfile.api
+    ports:
+      - "${API_PORT:-4000}:4000"
+    environment:
+      PORT: 4000
+      FIXTURES_PATH: /data/gwan-social.fixtures.json
+      # Front local (Vite), web Docker (8080) e variantes
+      CORS_ORIGINS: "${CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173,http://localhost:8080,http://127.0.0.1:8080}"
+    restart: unless-stopped

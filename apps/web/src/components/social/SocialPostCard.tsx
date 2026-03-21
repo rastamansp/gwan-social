@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import type { EditorialPost } from '@/data/mockUsers'
+import type { RatingSpotlightPerson } from '@/data/socialPosts.index'
 import { posts } from '@/data/mockUsers'
 import { UserReputationSidebar } from '@/components/social/UserReputationSidebar'
 import { VoteStarRow } from '@/components/social/VoteStarRow'
@@ -19,6 +20,10 @@ interface SocialPostCardProps {
   voteVariant?: 'sidebar' | 'inline'
   /** Rodapé do cartão editorial, à direita (ex.: página `/post/:id`). */
   cardFooterVote?: boolean
+  /** Sequência para alternar o bloco “quem avaliou” com esmaecer (ex.: detalhe do post). */
+  ratingSpotlights?: RatingSpotlightPerson[]
+  /** Intervalo entre troca de spotlights (ms). */
+  ratingSpotlightIntervalMs?: number
 }
 
 /** Card editorial estilo Nosedive: galeria + sidebar. Apenas apresentação. */
@@ -32,6 +37,8 @@ export function SocialPostCard({
   ratedCountLabel,
   voteVariant = 'sidebar',
   cardFooterVote = false,
+  ratingSpotlights,
+  ratingSpotlightIntervalMs,
 }: SocialPostCardProps) {
   const authorUserId = posts.find((p) => p.id === post.id)?.userId
   const profileHref = authorUserId ? `/user/${authorUserId}` : null
@@ -167,6 +174,8 @@ export function SocialPostCard({
             voteFeedback={sidebarFeedback}
             ratedCountLabel={ratedCountLabel}
             countLabelId={countLabelId}
+            ratingSpotlights={ratingSpotlights}
+            ratingSpotlightIntervalMs={ratingSpotlightIntervalMs}
           />
         </div>
 

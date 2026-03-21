@@ -11,7 +11,7 @@ Registrar fatores que **condicionam** decisões arquiteturais e de entrega, para
 | P1 | Equipe aplica checklist e ADRs com disciplina | Débito arquitetural e inconsistência entre serviços |
 | P2 | PostgreSQL é a fonte da verdade transacional | Perda de consistência se caches forem tratados como fonte |
 | P3 | Redis disponível para cache e fila em dev/prod | Plano B: fila embutida só para dev (exige ADR) |
-| P4 | Processamento pesado permanece no `worker-python` | Sobrecarga no `api-node` se alguém mover lógica para lá |
+| P4 | Processamento pesado permanece no `worker-python` | Sobrecarga em **`apps/api`** se alguém mover lógica para lá |
 | P5 | Monorepo **npm workspaces** na raiz (`pnpm` opcional) | Scripts e CI devem usar **npm** por omissão; adoção de pnpm exige alinhamento explícito |
 
 ## Restrições

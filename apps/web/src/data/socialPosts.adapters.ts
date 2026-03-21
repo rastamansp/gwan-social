@@ -6,7 +6,7 @@ import { fixtures } from '@/data/fixtures/loadFixtures'
 const { main: IMG_MAIN, side: IMG_SIDE, avatarFallback: AVATAR_FALLBACK } =
   fixtures.ui.fallbackEditorialImages
 
-function scoreToTier(score: number): UserProfile['tier'] {
+export function scoreToTier(score: number): UserProfile['tier'] {
   if (score >= 4.5) return 'elite'
   if (score >= 4.0) return 'premium'
   if (score >= 3.0) return 'standard'

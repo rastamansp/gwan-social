@@ -27,22 +27,31 @@ flowchart LR
   DEV[Desenvolvedor_ou_Traefik] -->|HTTP| NG
 ```
 
+## API Nest — as-is (isolada)
+
+[apps/api/docker-compose.yml](../../apps/api/docker-compose.yml) constrói e expõe **`apps/api`** (imagem `gwan-social-api`). Porta **host** por omissão **`${API_PORT:-4000}`** → **4000** no container (`PORT=4000`).
+
+- **Leituras (feed, posts, perfis, etc.):** ainda servidas pelo **read model em JSON** (fixtures), via `FixtureReadModelAdapter`.
+- **Utilizadores e auth:** **PostgreSQL** (Prisma) — `DATABASE_URL`, `JWT_SECRET`, migrations — ver [`apps/api/.env.example`](../../apps/api/.env.example) e [database-schema-physical.md](../03-data-architecture/database-schema-physical.md).
+
+**Checklist ao subir a API em produção:** `DATABASE_URL` e `JWT_SECRET` definidos; `npx prisma migrate deploy`; `CORS_ORIGINS` com a origem HTTPS da SPA; `PUBLIC_API_URL` se a API estiver atrás de proxy. O **compose de produção na raiz** ([`docker-compose-production.yml`](../../docker-compose-production.yml)) publica apenas a **web** — a API deve ser deployada à parte (este compose ou outro serviço).
+
 ## Stack completa — alvo ETAPA 2/3 (M1)
 
 | Serviço | Container / processo | Porta (exemplo) |
 |---------|----------------------|-----------------|
-| `api-node` | container | 3000 |
+| `apps/api` | container | **4000** (dev/Docker atual); ajustável por ambiente |
 | `worker-python` | container | 8000 (health opcional) |
 | `web` | container ou dev server | 5173 (dev) / 80 (prod Nginx) |
 | PostgreSQL | container | 5432 |
 | Redis | container | 6379 |
 
-**Compose** com API, worker, bases de dados e filas: **planeado** em `infra/docker/` ou consolidação com Compose na raiz — ver [folder-structure.md](../07-standards/folder-structure.md). O Compose **atual** na raiz **não** substitui este alvo.
+**Compose** com API, worker, bases de dados e filas: **planeado** em `infra/docker/` ou consolidação com Compose na raiz — ver [folder-structure.md](../07-standards/folder-structure.md). O Compose **atual** na raiz **não** substitui este alvo; a API sozinha já tem Compose dedicado em `apps/api/`.
 
 ```mermaid
 flowchart LR
   subgraph fullstack [Compose_alvo_M1]
-    API[api-node]
+    API[apps_api]
     PY[worker-python]
     WEBS[web]
     PG[(postgres)]
@@ -58,7 +67,7 @@ flowchart LR
 
 ## Produção (diretrizes gerais)
 
-- **Stateless** para `api-node` e `worker-python` (escala horizontal), quando existirem.  
+- **Stateless** para **`apps/api`** e `worker-python` (escala horizontal), quando existirem.  
 - **PostgreSQL** gerenciado ou VM com backup.  
 - **Redis** com persistência configurada se a fila exigir durabilidade (avaliar trade-off em ADR).  
 - **Segredos** via vault/variáveis do ambiente — nunca no Git.

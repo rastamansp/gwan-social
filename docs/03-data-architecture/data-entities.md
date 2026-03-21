@@ -4,6 +4,8 @@
 
 Listar **tabelas/conceitos** principais, relacionamentos e separação entre **dados operacionais** e **projeções de reputação**, servindo de guia para migrations e revisões de release.
 
+**Schema físico (PostgreSQL + Prisma, diagrama ER):** [database-schema-physical.md](database-schema-physical.md).
+
 ## Convenções
 
 - Nomes em `snake_case` plural onde fizer sentido (`users`, `ratings`).  
@@ -26,7 +28,7 @@ Listar **tabelas/conceitos** principais, relacionamentos e separação entre **d
 
 | Camada de dados | Conteúdo | Fonte da escrita principal |
 |-----------------|----------|----------------------------|
-| **Operacional** | `users`, `profiles`, `interactions`, `ratings` | `api-node` (transacional) |
+| **Operacional** | `users`, `profiles`, `interactions`, `ratings` | `apps/api` (transacional) |
 | **Projeção / analytics** | `reputation_snapshots`, `reputation_history` | `worker-python` (assíncrono), possivelmente leituras na API |
 
 ## Integridade e consistência

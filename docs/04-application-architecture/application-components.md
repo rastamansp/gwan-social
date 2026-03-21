@@ -8,22 +8,23 @@ Descrever **aplicações**, **pacotes compartilhados** e **bounded contexts lóg
 
 | | Estado atual (as-is) | Alvo |
 |--|----------------------|------|
-| **`apps/web`** | Implementada: UI social com **mocks**, auth em **`localStorage`**, sem chamadas HTTP à API | Consome `/v1`; sem lógica de negócio duplicada para reputação |
-| **`apps/api-node`**, **`apps/worker-python`**, **`apps/mobile`** | Não existem no repositório | Conforme fases M1–M5 |
+| **`apps/web`** | Implementada: UI social com **mocks**, auth em **`localStorage`**, sem consumo HTTP da API nos fluxos principais | Consome **`/api/v1`**; sem lógica de negócio duplicada para reputação |
+| **`apps/api`** | **Presente:** NestJS, read model a partir de **fixtures JSON** (sem DB, Redis, JWT) | Autenticação, persistência transacional, publicação em fila — fases M1–M5 |
+| **`apps/worker-python`**, **`apps/mobile`** | Não existem no repositório | Conforme fases M1–M5 |
 | **`packages/shared-types`**, **`packages/shared-utils`** | Opcional / vazio | Contratos e utilitários partilhados |
-| **Integração** | Nenhuma fila, DB nem Redis no projeto | API ↔ Redis ↔ worker ↔ PostgreSQL |
+| **Integração** | API serve apenas leitura fixture; sem fila nem bases de dados na app | API ↔ Redis ↔ worker ↔ PostgreSQL |
 
 ## Módulos de produto vs entrega (referência)
 
 | Módulo de produto | Bounded context / entrega principal |
 |-------------------|--------------------------------------|
-| Identity & Access | Contexto Identity; `api-node` + DB |
-| User Profile | Contexto Profile; `api-node` + DB |
-| Interactions | Contexto Social/interações; `api-node` + DB |
-| Ratings | Contexto Rating; `api-node` + DB |
-| Reputation | Contexto Reputation; `worker-python` (cálculo), `api-node` (leitura), DB |
+| Identity & Access | Contexto Identity; `apps/api` + DB |
+| User Profile | Contexto Profile; `apps/api` + DB |
+| Interactions | Contexto Social/interações; `apps/api` + DB |
+| Ratings | Contexto Rating; `apps/api` + DB |
+| Reputation | Contexto Reputation; `worker-python` (cálculo), `apps/api` (leitura), DB |
 | Administration | Superfícies `web` (e APIs com papel admin); evolução futura de políticas |
-| Notifications | `api-node` + canais (evolutivo) |
+| Notifications | `apps/api` + canais (evolutivo) |
 | Moderation / Appeals | API + worker (futuro) |
 | Analytics / Processing | `worker-python`, filas, métricas |
 
@@ -31,7 +32,7 @@ Descrever **aplicações**, **pacotes compartilhados** e **bounded contexts lóg
 
 | Componente | Tecnologia | Responsabilidade principal |
 |------------|------------|----------------------------|
-| `apps/api-node` | NestJS | HTTP API, autenticação, casos de uso, persistência transacional, publicação em fila |
+| `apps/api` | NestJS | **Hoje:** HTTP **read-only** sobre fixtures (demonstração / contrato antecipado). **Alvo:** autenticação, casos de uso, persistência transacional, publicação em fila |
 | `apps/worker-python` | FastAPI + workers | Consumo de fila, cálculo de reputação, antifraude/ranking/moderação assíncrona |
 | `apps/web` | React | UI web administrativa/social |
 | `apps/mobile` | React Native | App mobile consumindo mesma API |
@@ -39,6 +40,7 @@ Descrever **aplicações**, **pacotes compartilhados** e **bounded contexts lóg
 | `packages/shared-utils` | TS | Funções puras reutilizáveis (sem I/O) |
 | `infra/docker` | Docker Compose | Orquestração local da **stack completa** (alvo M1 — a criar) |
 | Raiz: `docker-compose*.yml` + `docker/` | Docker / Nginx | **Implementado:** build estático da web + serviço Nginx; variante produção com Traefik — ver [deployment-view.md](../05-technology-architecture/deployment-view.md) |
+| [apps/api/docker-compose.yml](../../apps/api/docker-compose.yml) | Docker | **Implementado:** imagem da API isolada (porta host por omissão **4000**) |
 
 ## Bounded contexts (lógicos)
 
@@ -59,7 +61,7 @@ Comunicação **assíncrona** entre API e worker via **Redis** (fila/cache), nun
 flowchart TB
   WEB[apps_web]
   MOB[apps_mobile]
-  API[apps_api-node]
+  API[apps_api]
   PY[apps_worker-python]
   ST[packages_shared-types]
   U[packages_shared-utils]
@@ -78,9 +80,9 @@ flowchart TB
   WEB --> U
 ```
 
-**Leitura do diagrama:** representa o **alvo** com integração real. **Hoje**, `apps/web` funciona em modo **protótipo** (sem setas efetivas para `api-node`); `apps_mobile`, `apps_api-node` e `apps_worker-python` ainda não estão no repositório.
+**Leitura do diagrama:** representa o **alvo** com integração real. **Hoje**, `apps/api` existe mas **não** liga a PostgreSQL nem Redis; `apps/web` funciona em modo **protótipo** (sem chamadas HTTP efetivas à API nos fluxos principais); `apps_mobile` e `apps_worker-python` ainda não estão no repositório.
 
 ## Princípios
 
-- **api-node** não contém algoritmo pesado de reputação — delega ao worker (pode haver validações leves).  
+- **`apps/api`** não contém algoritmo pesado de reputação — delega ao worker (pode haver validações leves).  
 - **worker-python** não expõe regra de negócio em endpoints públicos sem necessidade; foco em jobs e health interno.

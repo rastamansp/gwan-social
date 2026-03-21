@@ -19,7 +19,7 @@ Arquivo **versionado no Git** para acompanhar etapas macro, fases do MVP e itens
 | Etapa | Descrição | Status |
 |-------|-----------|--------|
 | **ETAPA 1** | Baseline documental, governança TOGAF-pragmática, `.cursorrules` | Concluída |
-| **ETAPA 2** | Definição funcional do produto (`application-definition.md`), baseline documental (v2.0 → **v2.1** snapshot as-is) | Concluída |
+| **ETAPA 2** | Definição funcional do produto (`application-definition.md`), baseline documental (v2.0 → **v2.2** snapshot as-is; `apps/api` + matriz v2.2) | Concluída |
 | **ETAPA 3** | Implementação do monorepo e MVP (código + infra local) | Em aberto |
 
 ---
@@ -32,7 +32,8 @@ Referência: [mvp-roadmap.md](mvp-roadmap.md), [backlog.md](backlog.md).
 
 - [x] `package.json` raiz com **npm workspaces** (`apps/*`, `packages/*`) — ver [README.md](../../README.md) (`pnpm-workspace.yaml` opcional quando adotar pnpm)
 - [x] Compose na raiz + [docker/Dockerfile](../../docker/Dockerfile): **apenas** build da web e Nginx (`docker-compose.yml`, `docker-compose-production.yml` com Traefik) — **não** substitui o Compose M1 com Postgres, Redis, API e worker
-- [ ] `apps/api-node`: esqueleto NestJS com estrutura de camadas (domínio / aplicação / interfaces / infra)
+- [x] `apps/api`: NestJS com **read model fixtures** — `presentation/http/v1`, `application` (use cases + porto), `infrastructure/fixtures`, prefixo **`/api/v1`**, OpenAPI/Swagger — ver [README.md](../../README.md)
+- [ ] `apps/api`: persistência PostgreSQL, auth JWT, publicação em fila e alinhamento a [api-standards.md](../07-standards/api-standards.md) (envelope `{ data, meta }`)
 - [ ] `apps/worker-python`: esqueleto FastAPI + worker + consumo Redis (conforme ADR futuro)
 - [ ] `packages/shared-types` mínimo (contratos base)
 - [ ] `packages/shared-utils` mínimo (se necessário na M1)
@@ -67,16 +68,16 @@ Referência: [mvp-roadmap.md](mvp-roadmap.md), [backlog.md](backlog.md).
 
 ### M5 — Clientes
 
-**Protótipo web (mock, sem `/v1`) — concluído para demonstração:**
+**Protótipo web (mock, sem consumo HTTP de `/api/v1`) — concluído para demonstração:**
 
 - [x] React + TypeScript + Tailwind v4; **feed** (`/`) com abas `?tab=` **feed**, **perfil**, **pessoas**, **ranking**
 - [x] **Detalhe de post** (`/post/:id`) layout editorial Nosedive + **votação 1–5 estrelas** mock (sem API)
 - [x] `/nearby`, `/presentation`, wizard `/user/:id/create-post` (passos content / media / review)
-- [x] `/login`, `/register`, `/user/:id/edit` — sessão e contas demo em **`localStorage`** (não cumpre UC-AUTH/UC-PROF até `api-node`)
+- [x] `/login`, `/register`, `/user/:id/edit` — sessão e contas demo em **`localStorage`** (não cumpre UC-AUTH/UC-PROF até `apps/api` + DB)
 - [x] Docker: `docker-compose.yml` (Nginx local, `WEB_PORT`), `docker-compose-production.yml` (Traefik, `GWAN_SOCIAL_HOST`), endpoint **`/health`**, `.env.example` e args de build **`VITE_*`**
 
-- [ ] `apps/web` — fluxos principais contra `/v1`
-- [ ] `apps/mobile` — fluxos principais contra `/v1`
+- [ ] `apps/web` — fluxos principais contra **`/api/v1`**
+- [ ] `apps/mobile` — fluxos principais contra **`/api/v1`**
 - [ ] Sem cálculo de reputação duplicado no cliente (apenas UI/API)
 
 ### Pós-MVP / evolutivo (não bloqueia MVP)
@@ -111,3 +112,4 @@ Espelho de [backlog.md](backlog.md) — marque quando o épico estiver entregue 
 | 2026-03-20 | — | `apps/web`: Vite + React + TS + Tailwind; workspaces na raiz |
 | 2026-03-20 | — | `apps/web`: react-router, UI your-social-score + componentes Nosedive editorial (`SocialPostCard`, etc.) |
 | 2026-03-21 | — | Sincronização documentação TOGAF (baseline 2.1): snapshot as-is vs alvo; npm; Docker raiz; protótipo auth/UI; matriz v2.1 |
+| 2026-03-21 | — | Baseline 2.2: `apps/api` no snapshot; matriz v2.2; prefixo `/api/v1`; project-tasks M1 parcial |

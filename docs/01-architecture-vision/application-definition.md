@@ -92,7 +92,7 @@ Conforme [mvp-roadmap.md](../06-delivery/mvp-roadmap.md) e [backlog.md](../06-de
 
 **Explícito fora ou adiado no MVP:** moderação completa, apelações, ranking contextual avançado, antifraude ML — preparação conceitual e extensibilidade via worker e dados.
 
-**Estado técnico atual do repositório:** existe apenas o **front-end web** com dados mock e sessão local; **backend transacional, worker e bases de dados ainda não estão implementados** — alinhado ao snapshot em [docs/README.md](../README.md).
+**Estado técnico atual do repositório:** **front-end web** com dados mock e sessão local; **`apps/api`** (NestJS) com **leitura** a partir do mesmo ficheiro de fixtures que alimenta o mock da web — útil para integração HTTP e contrato OpenAPI, **sem** backend transacional nem PostgreSQL/Redis. **Worker Python, mobile e persistência** ainda não implementados — alinhado ao snapshot em [docs/README.md](../README.md).
 
 ## Comportamento esperado da solução (resumo)
 

@@ -6,8 +6,8 @@ Normas para **migrations**, **naming**, **índices** e **consistência** entre A
 
 ## Migrations
 
-- Ferramenta única por runtime (ex.: TypeORM migrations no Node, ou Alembic no Python) — **evitar** duas fontes de verdade; preferir **migrations lideradas pelo `api-node`** se o schema for majoritariamente escrito pela API.  
-- Toda PR com mudança de schema inclui migration **revisável** e atualização de [data-entities.md](../03-data-architecture/data-entities.md).
+- Na API Node, as **migrations PostgreSQL** são geridas com **Prisma** (`apps/api/prisma/migrations`, ver [database-schema-physical.md](../03-data-architecture/database-schema-physical.md)). Evitar uma segunda ferramenta de schema para o mesmo runtime (ex.: Alembic só entra se o schema for escrito noutro serviço).  
+- Toda PR com mudança de schema inclui migration **revisável** e atualização de [data-entities.md](../03-data-architecture/data-entities.md) e do diagrama em [database-schema-physical.md](../03-data-architecture/database-schema-physical.md) quando aplicável.
 
 ## Naming
 

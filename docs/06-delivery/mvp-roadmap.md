@@ -12,12 +12,12 @@ Definir **fases do MVP** e critérios de pronto para a primeira entrega utilizá
 | **M2 — Identidade e perfil** | UC-AUTH-01/02, UC-PROF-01/02, migrations iniciais | Fluxo cadastro/login; edição de perfil; erros padronizados |
 | **M3 — Social + avaliações** | UC-INT-01, UC-RAT-01/02 | Interações e ratings persistidos; job enfileirado ao avaliar |
 | **M4 — Reputação assíncrona** | UC-REP-01/02/03 | Worker atualiza snapshots/histórico; leitura via API com `computed_at` |
-| **M5 — Clientes** | `web` e `mobile` consumindo `/v1` | Telas principais alinhadas aos UC; sem lógica de score no cliente |
+| **M5 — Clientes** | `web` e `mobile` consumindo **`/api/v1`** | Telas principais alinhadas aos UC; sem lógica de score no cliente |
 
 **Notas:**
 
-- **M1:** em paralelo já existe na raiz um Compose que faz apenas **build estático da web + Nginx** (e variante Traefik em produção). Isso **não** cumpre o critério de pronto da M1 (API, worker, Postgres, Redis).
-- **M5:** entrega **incremental** permitida — a primeira onda pode ser **protótipo web com mocks** (ver [project-tasks.md](project-tasks.md)); a linha da tabela permanece válida até `web` e `mobile` consumirem `/v1`.
+- **M1:** em paralelo já existe na raiz um Compose que faz apenas **build estático da web + Nginx** (e variante Traefik em produção), e **`apps/api`** com read model de fixtures (Compose opcional em `apps/api/`) — isso **não** cumpre o critério de pronto da M1 (Postgres, Redis, worker, API transacional).
+- **M5:** entrega **incremental** permitida — a primeira onda pode ser **protótipo web com mocks** (ver [project-tasks.md](project-tasks.md)); a linha da tabela permanece válida até `web` e `mobile` consumirem **`/api/v1`**.
 
 ## Fora do escopo do MVP
 
