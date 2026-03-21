@@ -1,0 +1,9 @@
+{
+  "name": "gwan-social",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev:web": "npm run dev --workspace=web",
+    "build:web": "npm run build --workspace=web"
+  }
+}

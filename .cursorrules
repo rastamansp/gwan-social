@@ -1,0 +1,107 @@
+# Gwan Social Reputation (gwan-social) — regras de implementação (baseline docs v2.0)
+
+Produto **Gwan Social Reputation**; repositório monorepo **pnpm** (`pnpm-workspace.yaml` na raiz). Documentação canônica: **`/docs`**. Definição funcional: `docs/01-architecture-vision/application-definition.md`. Antes de mudanças arquiteturais relevantes, ler `docs/README.md`, `docs/00-governance/architecture-principles.md`, `docs/01-architecture-vision/application-definition.md` e `docs/01-architecture-vision/vision.md`.
+
+---
+
+## 1. Escopo do repositório e módulos lógicos
+
+- Apps: `apps/api-node` (NestJS), `apps/worker-python` (FastAPI + workers), `apps/web` (React — painel admin/social), `apps/mobile` (React Native).
+- Pacotes: `packages/shared-types` (contratos DTO/eventos), `packages/shared-utils` (funções puras, sem I/O).
+- Infra local: `infra/docker`. Não adicionar apps fora dessa estrutura sem atualizar `docs/07-standards/folder-structure.md` e registrar ADR se necessário.
+- Módulos de negócio (Identity, Profile, Interactions, Ratings, Reputation, Administration, etc.) mapeiam a bounded contexts em `docs/04-application-architecture/application-components.md`; novos módulos seguem a mesma separação domínio / aplicação / interfaces / infra.
+
+---
+
+## 2. Clean Architecture e dependências
+
+- **Domínio:** sem imports de NestJS, FastAPI, React, drivers de DB/Redis, HTTP clients.
+- **Aplicação:** casos de uso / application services orquestram domínio e portas (interfaces).
+- **Interfaces/adaptadores:** controllers HTTP Nest, handlers de fila, presenters; apenas traduzem entrada/saída.
+- **Infraestrutura:** implementações concretas (repositórios, Redis, migrations).
+- Dependências apontam **para dentro** (domínio no centro). Não inverter.
+
+---
+
+## 3. Onde a lógica NÃO pode estar
+
+- **Proibido:** regra de negócio em controllers, rotas, pipes que codificam política de domínio (além de formato), componentes React/React Native de tela, estilos de hook que calculam reputação/score.
+- **Permitido em UI:** formatação, navegação, estado de UI, chamadas a API/SDK tipadas.
+
+---
+
+## 4. Casos de uso (obrigatório)
+
+- Toda funcionalidade relevante implementa ou reutiliza um caso de uso documentado em `docs/04-application-architecture/use-cases.md` (referenciar UC-ID em PRs).
+- NestJS: preferir uma classe/arquivo por fluxo (`*UseCase`) na camada `application/` do módulo.
+- Python: handlers de job na camada `application/` chamando domínio + repositórios; rotas FastAPI só health/admin mínimos.
+
+---
+
+## 5. Integração Node ↔ Python
+
+- Contrato de fila e DTOs públicos: alterar `packages/shared-types` quando o contrato TypeScript mudar; documentar payloads em `docs/04-application-architecture/integration-patterns.md`.
+- Incluir `schema_version` em mensagens de fila. Workers devem ser **idempotentes**.
+- Não acoplar cálculo pesado de reputação no `api-node`; processamento assíncrono no `worker-python` conforme docs.
+- Evitar HTTP síncrono entre Node e Python para o núcleo de reputação no MVP (exceções exigem ADR).
+
+---
+
+## 6. Dados e PostgreSQL
+
+- Mudanças de esquema: migrations + atualização de `docs/03-data-architecture/data-entities.md` e/ou `domain-model.md` quando aplicável.
+- Considerar transactional outbox ao combinar gravação transacional com publicação em fila (ver `docs/07-standards/database-standards.md`).
+
+---
+
+## 7. API HTTP (`api-node`)
+
+- Prefixo `/v1`. Erros e sucesso conforme `docs/07-standards/api-standards.md`.
+- Autenticação padrão: JWT Bearer até decisão contrária por ADR.
+
+---
+
+## 8. Redis
+
+- Uso acordado: cache e/ou fila (BullMQ ou padrão documentado). Não introduzir uso novo crítico sem documentar impacto.
+
+---
+
+## 9. Governança e releases
+
+- Mudança arquitetural relevante: ADR em `docs/adr/` usando `docs/00-governance/adr-template.md`.
+- Atualizar `docs/00-governance/traceability-matrix.md` quando objetivos/UCs/dados/tech mudarem.
+- Antes de merge/release relevante: checklist `docs/00-governance/architecture-review-checklist.md`.
+- Ao concluir marcos de implementação (ex.: fase M1–M5 do MVP), atualizar checklists em `docs/06-delivery/project-tasks.md` (e o resumo em `PROJECT_TASKS.md` na raiz, se aplicável).
+- Após alterar limites de camadas, integração entre serviços ou estrutura de pastas: revisar **este arquivo** e `docs/07-standards/cursorrules-standards.md`.
+
+---
+
+## 10. Duplicação e coesão
+
+- Não duplicar fórmulas ou políticas de reputação entre web, mobile e backend. Fonte do cálculo pesado: `worker-python`; API expõe resultados.
+- Extrair lógica repetida para domínio ou `packages/shared-utils` (apenas pura e sem dependências de framework).
+
+---
+
+## 11. Testes e ambiente
+
+- **Testes unitários:** fora do escopo até decisão explícita do projeto; não criar suítes obrigatórias por padrão.
+- Não commitar segredos. Não sobrescrever `.env` de terceiros.
+
+---
+
+## 12. Consistência entre apps
+
+- Tipos compartilhados para contratos: `packages/shared-types`. Manter alinhamento nominal entre consumo TS e validação Python (Pydantic) descrita na documentação de integração.
+
+---
+
+## 13. Nomenclatura no código (`apps/web` e demais apps)
+
+- **Identificadores em inglês:** nomes de ficheiros, componentes React, funções, tipos, variáveis e rotas de URL devem usar **inglês** (ex.: `PresentationPage`, `/presentation`, `NearbyPage`, `/nearby`). Evitar nomes em português em código (ex.: ~~`ApresentacaoPage`~~, ~~`/apresentacao`~~).
+- **UI e cópia:** textos visíveis ao utilizador podem permanecer em **português (pt-BR)** ou outro idioma acordado para o produto; apenas o código e os segmentos de rota seguem a convenção em inglês.
+
+---
+
+Última atualização baseline documental: 2026-03-20. Qualquer mudança estrutural deve manter este arquivo coerente com `/docs`.

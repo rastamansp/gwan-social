@@ -1,0 +1,173 @@
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react'
+
+const STORAGE_KEY = 'gwan-social-auth-v1'
+const ACCOUNTS_KEY = 'gwan-social-local-accounts-v1'
+
+/** Conta fixa para testes na demonstração (sem API). */
+export const DEMO_TEST_USER = 'demo' as const
+export const DEMO_TEST_PASSWORD = 'demo123' as const
+
+export type AuthState = {
+  isAuthenticated: boolean
+  username: string | null
+}
+
+type LocalAccounts = Record<string, string>
+
+function readStored(): AuthState {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return { isAuthenticated: false, username: null }
+    const j = JSON.parse(raw) as unknown
+    if (j === null || typeof j !== 'object' || Array.isArray(j)) {
+      return { isAuthenticated: false, username: null }
+    }
+    const rec = j as Record<string, unknown>
+    const username =
+      typeof rec.username === 'string'
+        ? rec.username
+        : typeof rec.email === 'string'
+          ? (rec.email.split('@')[0] ?? rec.email)
+          : null
+    return {
+      isAuthenticated: Boolean(rec.isAuthenticated),
+      username,
+    }
+  } catch {
+    return { isAuthenticated: false, username: null }
+  }
+}
+
+function writeStored(next: AuthState) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+}
+
+function readAccounts(): LocalAccounts {
+  try {
+    const raw = localStorage.getItem(ACCOUNTS_KEY)
+    if (!raw) return {}
+    const j = JSON.parse(raw) as unknown
+    if (j === null || typeof j !== 'object' || Array.isArray(j)) return {}
+    return j as LocalAccounts
+  } catch {
+    return {}
+  }
+}
+
+function writeAccounts(accounts: LocalAccounts) {
+  localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts))
+}
+
+export function normalizeLoginUsername(raw: string) {
+  return raw.trim().toLowerCase()
+}
+
+function validateUsername(raw: string) {
+  const u = normalizeLoginUsername(raw)
+  if (u.length < 3) {
+    throw new Error('Utilizador: mínimo 3 caracteres.')
+  }
+  if (!/^[a-z0-9_]+$/.test(u)) {
+    throw new Error('Utilizador: só letras minúsculas, números e underscore (_).')
+  }
+  return u
+}
+
+function validatePassword(password: string) {
+  if (password.length < 6) {
+    throw new Error('A senha deve ter pelo menos 6 caracteres.')
+  }
+}
+
+type AuthContextValue = AuthState & {
+  login: (username: string, password: string) => Promise<void>
+  logout: () => void
+  register: (name: string, username: string, password: string) => Promise<void>
+}
+
+const AuthContext = createContext<AuthContextValue | null>(null)
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [state, setState] = useState<AuthState>(readStored)
+
+  const login = useCallback(async (username: string, password: string) => {
+    const u = validateUsername(username)
+    validatePassword(password)
+
+    if (u === DEMO_TEST_USER && password === DEMO_TEST_PASSWORD) {
+      const next: AuthState = { isAuthenticated: true, username: DEMO_TEST_USER }
+      setState(next)
+      writeStored(next)
+      return
+    }
+
+    const accounts = readAccounts()
+    if (accounts[u] === password) {
+      const next: AuthState = { isAuthenticated: true, username: u }
+      setState(next)
+      writeStored(next)
+      return
+    }
+
+    throw new Error(
+      `Utilizador ou senha incorretos. Para testar, usa utilizador "${DEMO_TEST_USER}" e senha "${DEMO_TEST_PASSWORD}".`,
+    )
+  }, [])
+
+  const logout = useCallback(() => {
+    const next: AuthState = { isAuthenticated: false, username: null }
+    setState(next)
+    writeStored(next)
+  }, [])
+
+  const register = useCallback(async (name: string, username: string, password: string) => {
+    const n = name.trim()
+    if (n.length < 2) {
+      throw new Error('O nome deve ter pelo menos 2 caracteres.')
+    }
+    const u = validateUsername(username)
+    validatePassword(password)
+
+    if (u === DEMO_TEST_USER) {
+      throw new Error(`O utilizador "${DEMO_TEST_USER}" é reservado para a conta de teste. Escolhe outro.`)
+    }
+
+    const accounts = readAccounts()
+    if (accounts[u] !== undefined) {
+      throw new Error('Este nome de utilizador já está registado.')
+    }
+
+    accounts[u] = password
+    writeAccounts(accounts)
+    const next: AuthState = { isAuthenticated: true, username: u }
+    setState(next)
+    writeStored(next)
+  }, [])
+
+  const value = useMemo(
+    () => ({
+      ...state,
+      login,
+      logout,
+      register,
+    }),
+    [state, login, logout, register],
+  )
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+}
+
+export function useAuth(): AuthContextValue {
+  const ctx = useContext(AuthContext)
+  if (!ctx) {
+    throw new Error('useAuth deve ser usado dentro de AuthProvider')
+  }
+  return ctx
+}

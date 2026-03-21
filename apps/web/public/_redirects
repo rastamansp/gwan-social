@@ -1,0 +1,6 @@
+# URLs antigas (PT) → canónicas em inglês
+/apresentacao  /presentation  301
+/proximo       /nearby        301
+
+# Netlify / SPA: todas as rotas entregam index.html (client-side routing)
+/*    /index.html   200

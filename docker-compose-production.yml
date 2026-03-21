@@ -1,0 +1,54 @@
+# Gwan Social — frontend em produção atrás do Traefik (HTTPS / Let's Encrypt).
+# Este compose expõe apenas o serviço Nginx com o build estático do Vite.
+#
+# Pré-requisitos:
+#   - Rede Docker externa: docker network create gwan
+#   - Traefik com entrypoint `websecure`, cert resolver `letsencrypt`, rede `gwan`
+#
+# Build: as variáveis VITE_* são injetadas em tempo de build (bundle estático).
+# Definir VITE_API_URL (ex.: .env ao lado deste ficheiro) antes do `docker compose -f docker-compose-production.yml build`.
+#
+# Traefik: o host público vem de GWAN_SOCIAL_HOST (ficheiro .env na raiz ou ambiente). Ver `.env.example`.
+
+services:
+  frontendSocial:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      no_cache: true
+      pull: true
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3001/api}
+        VITE_APP_NAME: ${VITE_APP_NAME:-Gwan Social}
+        VITE_APP_VERSION: ${VITE_APP_VERSION:-1.0.0}
+    image: gwan-social-frontend:latest
+    container_name: gwan-social-frontend
+    restart: unless-stopped
+    networks:
+      - gwan
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gwan-social-frontend.rule=Host(`${GWAN_SOCIAL_HOST:-social.gwan.com.br}`)"
+      - "traefik.http.routers.gwan-social-frontend.entrypoints=websecure"
+      - "traefik.http.routers.gwan-social-frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.gwan-social-frontend.loadbalancer.server.port=80"
+      - "traefik.http.middlewares.gwan-social-frontend-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.routers.gwan-social-frontend.middlewares=gwan-social-frontend-headers"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://127.0.0.1/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  gwan:
+    external: true

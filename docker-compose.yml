@@ -1,0 +1,11 @@
+# Gwan Social — stack local (app web estática via Nginx).
+# Pré-requisito: Docker Engine + Docker Compose v2.
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    restart: unless-stopped

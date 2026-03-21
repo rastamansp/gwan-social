@@ -1,0 +1,241 @@
+@import url("https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,400&display=swap");
+
+@import "tailwindcss";
+
+/* Tokens alinhados a import/your-social-score + frame Nosedive editorial */
+:root {
+  --background: 20 33% 98%;
+  --foreground: 340 20% 20%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 340 20% 20%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 340 20% 20%;
+
+  --primary: 340 65% 70%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 165 30% 85%;
+  --secondary-foreground: 165 40% 25%;
+
+  --muted: 20 20% 94%;
+  --muted-foreground: 340 10% 50%;
+
+  --accent: 40 80% 85%;
+  --accent-foreground: 40 60% 25%;
+
+  --destructive: 0 72% 60%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 340 20% 90%;
+  --input: 340 20% 90%;
+  --ring: 340 65% 70%;
+
+  --radius: 1rem;
+
+  --rating-gold: 45 90% 55%;
+  --rating-low: 0 60% 65%;
+  --surface-glow: 340 60% 95%;
+
+  --sidebar-background: 0 0% 98%;
+  --sidebar-foreground: 240 5.3% 26.1%;
+  --sidebar-primary: 240 5.9% 10%;
+  --sidebar-primary-foreground: 0 0% 98%;
+  --sidebar-accent: 240 4.8% 95.9%;
+  --sidebar-accent-foreground: 240 5.9% 10%;
+  --sidebar-border: 220 13% 91%;
+  --sidebar-ring: 217.2 91.2% 59.8%;
+
+  /* Nosedive editorial — gradiente e acentos (hex → uso via utilities dedicadas) */
+  --nosedive-from: #efe4eb;
+  --nosedive-via: #f3e7ee;
+  --nosedive-to: #e8dfe8;
+  --nosedive-text: #5f5564;
+  --nosedive-title: #5d5362;
+  --nosedive-muted-text: #6b6070;
+  --nosedive-accent-line: #bba9be;
+  --nosedive-star-mint: #9fe7cb;
+}
+
+@theme {
+  --font-display: "Quicksand", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-sans);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-rating-gold: hsl(var(--rating-gold));
+  --color-rating-low: hsl(var(--rating-low));
+  --color-surface-glow: hsl(var(--surface-glow));
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-fade-up: fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-scale-in: scale-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-pulse-soft: pulse-soft 2s ease-in-out infinite;
+}
+
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height, auto);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height, auto);
+  }
+  to {
+    height: 0;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply min-h-dvh overflow-x-hidden bg-background font-sans text-foreground antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+    overflow-wrap: break-word;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  }
+
+  .rating-glow {
+    box-shadow:
+      0 0 20px hsl(var(--primary) / 0.2),
+      0 0 60px hsl(var(--primary) / 0.05);
+  }
+
+  .card-hover {
+    transition:
+      transform 300ms cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 8px 30px hsl(var(--primary) / 0.12),
+      0 2px 8px hsl(var(--primary) / 0.06);
+  }
+
+  .animate-fade-up {
+    animation: fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-scale-in {
+    animation: scale-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-pulse-soft {
+    animation: pulse-soft 2s ease-in-out infinite;
+  }
+
+  .bg-nosedive-gradient {
+    background-image: linear-gradient(
+      to bottom right,
+      var(--nosedive-from),
+      var(--nosedive-via),
+      var(--nosedive-to)
+    );
+  }
+
+  .text-nosedive-body {
+    color: var(--nosedive-text);
+  }
+
+  .text-nosedive-title {
+    color: var(--nosedive-title);
+  }
+
+  .text-nosedive-muted {
+    color: var(--nosedive-muted-text);
+  }
+
+  .bg-nosedive-line {
+    background-color: var(--nosedive-accent-line);
+  }
+
+  .text-nosedive-star {
+    color: var(--nosedive-star-mint);
+  }
+}
