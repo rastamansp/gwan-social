@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { JwtModule } from '@nestjs/jwt'
+import { parseJwtExpiresSec } from '../config'
 import { ApplicationModule } from '../application/application.module'
 import { InfrastructureModule } from '../infrastructure/infrastructure.module'
 import { PrismaModule } from '../infrastructure/prisma/prisma.module'
@@ -29,7 +30,7 @@ function jwtSecret(config: ConfigService): string {
       useFactory: (config: ConfigService) => ({
         secret: jwtSecret(config),
         signOptions: {
-          expiresIn: parseInt(config.get<string>('JWT_ACCESS_EXPIRES_SEC') ?? '900', 10),
+          expiresIn: parseJwtExpiresSec(config.get<string>('JWT_ACCESS_EXPIRES_SEC'), 900),
         },
       }),
     }),

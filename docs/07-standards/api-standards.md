@@ -29,7 +29,7 @@ Gerado com **`@nestjs/swagger`** em `apps/api`; publicar artefato por release qu
 
 ## As-is vs alvo normativo (envelope e erros)
 
-A API de **fixtures** (`apps/api`) pode devolver **JSON direto** (ex.: `{ "ok": true }`, listas paginadas) e erros simples (`{ "error": "…" }`) **sem** o envelope abaixo até alinhamento explícito com clientes. O **alvo** para API transacional:
+A API de **fixtures** (`apps/api`) devolve **JSON direto** em sucesso (ex.: `{ "ok": true }`, listas paginadas). Para **erros HTTP** nas rotas de leitura e sessão, usa o **corpo padrão do Nest** ao lançar `NotFoundException` / `UnauthorizedException` (ex.: `{ "statusCode": 404, "message": "…", "error": "Not Found" }`). O **alvo** envelope abaixo aplica-se à API transacional de produto:
 
 ## Formato de resposta de sucesso (alvo)
 

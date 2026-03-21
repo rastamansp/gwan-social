@@ -33,3 +33,9 @@ export function publicApiBase(port: number, publicUrl?: string): string {
   const u = publicUrl?.trim().replace(/\/$/, '')
   return u || `http://localhost:${port}`
 }
+
+/** Segundos para expiração JWT (env opcional); evita NaN no jsonwebtoken. */
+export function parseJwtExpiresSec(raw: string | undefined, fallback: number): number {
+  const n = Number.parseInt(raw ?? String(fallback), 10)
+  return Number.isFinite(n) && n >= 1 ? n : fallback
+}

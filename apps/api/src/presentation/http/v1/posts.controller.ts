@@ -1,8 +1,17 @@
-import { Controller, Get, Param, Query, Res } from '@nestjs/common'
-import { ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
-import type { Response } from 'express'
+import { Controller, Get, NotFoundException, Param, Query } from '@nestjs/common'
+import {
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger'
 import { GetPostByIdUseCase } from '../../../application/use-cases/get-post-by-id.use-case'
 import { ListNearbyPostsUseCase } from '../../../application/use-cases/list-nearby-posts.use-case'
+import { HttpExceptionResponseDto } from '../swagger/error-responses.dto'
+import { cursorDesc, limitFeedPostsDesc, PaginatedSocialPostDto } from '../swagger/pagination.dto'
+import { SocialPostDto } from '../swagger/social-post-response.dto'
 
 @ApiTags('Feed e posts')
 @Controller()
@@ -13,22 +22,43 @@ export class PostsController {
   ) {}
 
   @Get('posts/nearby')
-  @ApiOperation({ summary: 'Posts próximos (demo)' })
-  @ApiQuery({ name: 'limit', required: false })
-  @ApiQuery({ name: 'cursor', required: false })
+  @ApiOperation({
+    summary: 'Posts próximos (demo)',
+    description: 'Read model com distâncias simuladas; mesma forma que o feed.',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: limitFeedPostsDesc,
+    schema: { default: 20, minimum: 1, maximum: 50, type: 'integer' },
+  })
+  @ApiQuery({
+    name: 'cursor',
+    required: false,
+    description: cursorDesc,
+  })
+  @ApiOkResponse({ description: 'Página de posts “nearby”.', type: PaginatedSocialPostDto })
   nearby(@Query('limit') limit?: string, @Query('cursor') cursor?: string) {
     return this.listNearby.execute({ limit, cursor })
   }
 
   @Get('posts/:postId')
-  @ApiOperation({ summary: 'Detalhe de um post' })
-  @ApiParam({ name: 'postId' })
-  getOne(@Param('postId') postId: string, @Res({ passthrough: false }) res: Response) {
+  @ApiOperation({ summary: 'Detalhe de um post', description: 'Um único `SocialPost` do read model.' })
+  @ApiParam({
+    name: 'postId',
+    description: 'ID do post (ex. do fixture)',
+    example: 'post_001',
+  })
+  @ApiOkResponse({ description: 'Post encontrado.', type: SocialPostDto })
+  @ApiNotFoundResponse({
+    description: 'ID desconhecido.',
+    type: HttpExceptionResponseDto,
+  })
+  getOne(@Param('postId') postId: string) {
     const post = this.getPostById.execute(postId)
     if (!post) {
-      res.status(404).json({ error: 'Post não encontrado' })
-      return
+      throw new NotFoundException('Post não encontrado')
     }
-    res.json(post)
+    return post
   }
 }

@@ -32,7 +32,11 @@ async function bootstrap() {
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Gwan Social API (fixtures)')
     .setDescription(
-      'API REST de demonstração: lê gwan-social.fixtures.json e expõe o read model hidratado (paginação por cursor).',
+      [
+        'API REST Gwan Social: rotas de leitura (feed, posts, utilizadores) servidas a partir do read model em **gwan-social.fixtures.json** (paginação por cursor base64url).',
+        '**Autenticação:** registo, login, refresh e logout persistem utilizadores e sessões em **PostgreSQL (Prisma)**; envia `Authorization: Bearer <accessToken>` em `GET /me`.',
+        'OpenAPI gerado a partir de DTOs Nest; experimenta os esquemas em "Try it out" ou importa `/api/openapi.json`.',
+      ].join('\n\n'),
     )
     .setVersion('0.1.0')
     .addServer(publicBase)

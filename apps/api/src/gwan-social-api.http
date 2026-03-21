@@ -1,0 +1,177 @@
+# Gwan Social API — pedidos para extensão REST Client (VS Code / Cursor)
+# Executar: npm run dev:api (porta por defeito 4000)
+# Ajuste @baseUrl se usar PORT ou proxy diferente.
+
+@baseUrl = http://localhost:4000
+@api = {{baseUrl}}/api/v1
+
+# IDs de exemplo (fixtures gwan-social.fixtures.json)
+@sampleUserId = user_001
+@samplePostId = post_001
+
+# Cole aqui um access token após login, ou use o bloco @name login + {{login.response.body.accessToken}}
+@accessToken = nkNqe4YCWhP5EY0lVPPku5dZXoQdRo6ICd-dk_TUjYITGyLPOqSmWEvGEt_zhSqu
+
+# Registo/login exigem PostgreSQL com migrations aplicadas. Se receberes 503 com mensagem sobre
+# migrations: em apps/api corre `npx prisma migrate deploy` (e opcionalmente `npm run prisma:seed`).
+
+
+###############################################################################
+### Raiz & documentação (fora do prefixo api/v1)
+###############################################################################
+
+### Metadados do serviço (links Swagger, health, path dos fixtures)
+GET {{baseUrl}}/
+Accept: application/json
+
+### OpenAPI JSON
+GET {{baseUrl}}/api/openapi.json
+Accept: application/json
+
+
+###############################################################################
+### Sistema
+###############################################################################
+
+### Health
+GET {{api}}/health
+Accept: application/json
+
+
+###############################################################################
+### Feed (read model fixtures)
+###############################################################################
+
+### Feed — primeira página (limite por defeito no servidor)
+GET {{api}}/feed
+Accept: application/json
+
+### Feed — com limite e cursor
+GET {{api}}/feed?limit=5
+Accept: application/json
+
+### Feed — página seguinte (ex.: cursor base64url para índice 3; ou copiar `nextCursor` da resposta)
+GET {{api}}/feed?limit=3&cursor=eyJpIjozfQ
+Accept: application/json
+
+
+###############################################################################
+### Posts (read model fixtures)
+###############################################################################
+
+### Posts próximos
+GET {{api}}/posts/nearby
+Accept: application/json
+
+### Posts próximos — paginação
+GET {{api}}/posts/nearby?limit=5
+Accept: application/json
+
+### Detalhe de post
+GET {{api}}/posts/{{samplePostId}}
+Accept: application/json
+
+### Detalhe inexistente (404)
+GET {{api}}/posts/post_inexistente
+Accept: application/json
+
+
+###############################################################################
+### Utilizadores (read model fixtures)
+###############################################################################
+
+### Perfil público
+GET {{api}}/users/{{sampleUserId}}
+Accept: application/json
+
+### Posts do utilizador
+GET {{api}}/users/{{sampleUserId}}/posts
+Accept: application/json
+
+### Posts do utilizador — paginação
+GET {{api}}/users/{{sampleUserId}}/posts?limit=5
+Accept: application/json
+
+### Avaliações recebidas
+GET {{api}}/users/{{sampleUserId}}/ratings/received
+Accept: application/json
+
+### Amigos (IDs)
+GET {{api}}/users/{{sampleUserId}}/friends
+Accept: application/json
+
+
+###############################################################################
+### Sessão (JWT ou fallback fixture em dev)
+###############################################################################
+
+### GET /me — Bearer (defina @accessToken ou use o pedido nomeado login abaixo)
+GET {{api}}/me
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+### GET /me — token do último login desta sessão REST Client
+# @name meAfterLogin
+GET {{api}}/me
+Accept: application/json
+Authorization: Bearer {{login.response.body.accessToken}}
+
+
+###############################################################################
+### Autenticação (throttle: 5 req / 60s por IP nas rotas /auth/*)
+###############################################################################
+
+### Registo — altere username para evitar 409 (duplicado)
+# @name register
+POST {{api}}/auth/register
+Content-Type: application/json
+
+{
+  "displayName": "Tester HTTP",
+  "username": "tester_http_001",
+  "password": "senha_segura_8",
+  "email": "tester@example.com"
+}
+
+### Login
+# @name login
+POST {{api}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "tester_http_001",
+  "password": "senha_segura_8"
+}
+
+### Refresh — colar refreshToken da resposta de login/register
+# @name refresh
+POST {{api}}/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "COLE_O_REFRESH_TOKEN_AQUI"
+}
+
+### Logout — revoga refresh token
+POST {{api}}/auth/logout
+Content-Type: application/json
+
+{
+  "refreshToken": "COLE_O_REFRESH_TOKEN_AQUI"
+}
+
+
+###############################################################################
+### Fluxo rápido: login fixture seed (se existir utilizador na BD após seed)
+# Ajuste username/password conforme dados em Prisma (seed a partir dos fixtures).
+###############################################################################
+
+### Login — exemplo com utilizador seed (username do fixture laciepound só existe na BD após seed com password definida no seed)
+# Descomente e adapte quando o seed criar passwords conhecidas.
+# POST {{api}}/auth/login
+# Content-Type: application/json
+#
+# {
+#   "username": "laciepound",
+#   "password": "SUA_SENHA_SEED"
+# }
