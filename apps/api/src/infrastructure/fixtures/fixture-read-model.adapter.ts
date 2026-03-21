@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Inject, Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import type { FixtureReadModelPort } from '../../application/ports/fixture-read-model.port'
 import { resolveFixturesPath } from '../../config'
@@ -9,7 +9,7 @@ import { getHydrated, resetHydratedCache } from './loadHydrated'
 export class FixtureReadModelAdapter implements FixtureReadModelPort {
   private readonly fixturesPath: string
 
-  constructor(private readonly config: ConfigService) {
+  constructor(@Inject(ConfigService) private readonly config: ConfigService) {
     this.fixturesPath = resolveFixturesPath(process.cwd(), this.config.get<string>('FIXTURES_PATH'))
   }
 

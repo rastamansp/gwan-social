@@ -1,0 +1,60 @@
+# Gwan Social — API NestJS em produção atrás do Traefik (HTTPS / Let's Encrypt).
+# Expõe apenas o serviço da API na rede `gwan`; o host público vem de GWAN_SOCIAL_API_HOST.
+#
+# Pré-requisitos:
+#   - Rede Docker externa: docker network create gwan
+#   - Traefik com entrypoint `websecure`, cert resolver `letsencrypt`, rede `gwan`
+#
+# Uso (a partir de apps/api):
+#   docker compose -f docker-compose-production.yml --env-file .env up -d --build
+#
+# Variáveis: ver `.env.example`. Obrigatório em produção: DATABASE_URL, JWT_SECRET, CORS_ORIGINS (origem HTTPS do frontend).
+
+services:
+  apiSocial:
+    build:
+      context: ../..
+      dockerfile: docker/Dockerfile.api
+      no_cache: true
+      pull: true
+    image: gwan-social-api:latest
+    container_name: gwan-social-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      FIXTURES_PATH: /data/gwan-social.fixtures.json
+      DATABASE_URL: "${DATABASE_URL:?Defina DATABASE_URL}"
+      JWT_SECRET: "${JWT_SECRET:?Defina JWT_SECRET}"
+      JWT_ACCESS_EXPIRES_SEC: ${JWT_ACCESS_EXPIRES_SEC:-900}
+      JWT_REFRESH_EXPIRES_SEC: ${JWT_REFRESH_EXPIRES_SEC:-604800}
+      CORS_ORIGINS: "${CORS_ORIGINS:?Defina CORS_ORIGINS}"
+      PUBLIC_API_URL: "https://${GWAN_SOCIAL_API_HOST:-api.social.gwan.com.br}"
+      AUTH_FIXTURE_ME_FALLBACK: ${AUTH_FIXTURE_ME_FALLBACK:-false}
+    networks:
+      - gwan
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gwan-social-api.rule=Host(`${GWAN_SOCIAL_API_HOST:-api.social.gwan.com.br}`)"
+      - "traefik.http.routers.gwan-social-api.entrypoints=websecure"
+      - "traefik.http.routers.gwan-social-api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.gwan-social-api.loadbalancer.server.port=4000"
+      - "traefik.http.middlewares.gwan-social-api-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.routers.gwan-social-api.middlewares=gwan-social-api-headers"
+    healthcheck:
+      # Imagem slim pode não ter wget/curl; Node 22 expõe fetch global.
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:4000/api/v1/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  gwan:
+    external: true

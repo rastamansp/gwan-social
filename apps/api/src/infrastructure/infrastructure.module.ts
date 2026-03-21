@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common'
+import { ConfigModule } from '@nestjs/config'
 import { FIXTURE_READ_MODEL_PORT } from '../application/ports/fixture-read-model.token'
 import { FixtureReadModelAdapter } from './fixtures/fixture-read-model.adapter'
 
 @Module({
+  imports: [ConfigModule],
   providers: [
     FixtureReadModelAdapter,
     { provide: FIXTURE_READ_MODEL_PORT, useExisting: FixtureReadModelAdapter },
