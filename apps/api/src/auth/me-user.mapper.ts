@@ -20,8 +20,11 @@ export function buildMeUserDtoFromPrisma(user: User, h: HydratedFixtures): MeUse
   if (pu) {
     return {
       ...pu,
-      avatarUrl: pu.avatarUrl ?? '',
-      headline: pu.headline ?? '',
+      username: user.username,
+      displayName: user.displayName,
+      avatarUrl: (user.avatarUrl ?? pu.avatarUrl) ?? '',
+      headline: (user.headline ?? pu.headline) ?? '',
+      bio: user.bio ?? pu.bio ?? null,
       handle: `@${user.username}`,
     }
   }
@@ -31,7 +34,7 @@ export function buildMeUserDtoFromPrisma(user: User, h: HydratedFixtures): MeUse
     displayName: user.displayName,
     avatarUrl: user.avatarUrl ?? '',
     headline: user.headline ?? '',
-    bio: null,
+    bio: user.bio ?? null,
     socialScore: 4,
     reputationByContext: {},
     handle: `@${user.username}`,

@@ -9,7 +9,7 @@ Documentar o **modelo relacional** aplicado na API (`apps/api`) via **Prisma**, 
 - Variável de ambiente **`DATABASE_URL`** (PostgreSQL), definida em `apps/api/.env` (não commitado). Ver [`apps/api/.env.example`](../../apps/api/.env.example).
 - Migrations versionadas em [`apps/api/prisma/migrations/`](../../apps/api/prisma/migrations/).
 - Schema Prisma: [`apps/api/prisma/schema.prisma`](../../apps/api/prisma/schema.prisma).
-- **Seeders (código):** [`apps/api/prisma/seeds/`](../../apps/api/prisma/seeds/) — módulos por tabela (`seedUsers`, `seedPosts`, …) e [`runAllSeeds.ts`](../../apps/api/prisma/seeds/runAllSeeds.ts); a entrada [`prisma/seed.ts`](../../apps/api/prisma/seed.ts) só orquestra. A fonte de dados é o mesmo **`gwan-social.fixtures.json`** que alimenta o mock da API (`FIXTURES_PATH` opcional).
+- **Seeders (código):** [`apps/api/prisma/seeds/`](../../apps/api/prisma/seeds/) — módulos por tabela (`seedUsers`, `seedPosts`, …) e [`runAllSeeds.ts`](../../apps/api/prisma/seeds/runAllSeeds.ts); a entrada [`prisma/seed.ts`](../../apps/api/prisma/seed.ts) só orquestra. A fonte de dados é o mesmo **`gwan-social.fixtures.json`** que alimenta o mock da API (`FIXTURES_PATH` opcional). Após o fixture, [`seedDemoAuthorWithPosts.ts`](../../apps/api/prisma/seeds/seedDemoAuthorWithPosts.ts) cria um utilizador **só na base** com duas postagens e **amizades aceites** com `user_001`…`user_005` do fixture (login **`gwanseed_posts`** / **`DemoPosts123!`**, ver ficheiro para o UUID do perfil).
 
 ## Comandos (na pasta `apps/api`)
 
@@ -48,6 +48,7 @@ erDiagram
     text display_name
     text avatar_url
     text headline
+    text bio_nullable
     text password_hash_nullable
     timestamp created_at
     timestamp updated_at

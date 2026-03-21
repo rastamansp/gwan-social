@@ -1,4 +1,5 @@
-import { apiGet, apiPost } from '@/lib/api/client'
+import { apiGet, apiPatch, apiPost } from '@/lib/api/client'
+import { parseAuthTokensResponse } from '@/lib/api/authTokens'
 import type { AuthTokens } from '@/lib/api/authStorage'
 import type { ApiMeUserDto, ApiPublicUserDto } from '@/lib/api/mapApiUserToProfile'
 import type { PaginatedResult } from '@/lib/api/types'
@@ -19,7 +20,8 @@ export async function fetchHealth(): Promise<HealthResponse> {
 }
 
 export async function fetchLogin(body: { username: string; password: string }): Promise<AuthTokens> {
-  return apiPost<AuthTokens>('/auth/login', body, { skipAuth: true })
+  const raw = await apiPost<unknown>('/auth/login', body, { skipAuth: true })
+  return parseAuthTokensResponse(raw)
 }
 
 export async function fetchRegister(body: {
@@ -28,11 +30,13 @@ export async function fetchRegister(body: {
   password: string
   email?: string
 }): Promise<AuthTokens> {
-  return apiPost<AuthTokens>('/auth/register', body, { skipAuth: true })
+  const raw = await apiPost<unknown>('/auth/register', body, { skipAuth: true })
+  return parseAuthTokensResponse(raw)
 }
 
 export async function fetchRefresh(refreshToken: string): Promise<AuthTokens> {
-  return apiPost<AuthTokens>('/auth/refresh', { refreshToken }, { skipAuth: true })
+  const raw = await apiPost<unknown>('/auth/refresh', { refreshToken }, { skipAuth: true })
+  return parseAuthTokensResponse(raw)
 }
 
 export async function fetchLogout(refreshToken: string): Promise<void> {
@@ -69,6 +73,14 @@ export async function fetchNearbyPosts(params?: {
 
 export async function fetchMe(): Promise<ApiMeUserDto> {
   return apiGet<ApiMeUserDto>('/me')
+}
+
+export async function fetchPatchMe(body: {
+  displayName: string
+  username: string
+  bio?: string
+}): Promise<ApiMeUserDto> {
+  return apiPatch<ApiMeUserDto>('/me', body)
 }
 
 export async function fetchUserProfile(userId: string): Promise<ApiPublicUserDto> {

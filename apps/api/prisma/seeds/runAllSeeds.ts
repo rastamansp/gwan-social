@@ -7,6 +7,7 @@ import { seedPostMentions } from './seedPostMentions'
 import { seedPosts } from './seedPosts'
 import { seedRatings } from './seedRatings'
 import { seedUsers } from './seedUsers'
+import { seedDemoAuthorWithPosts } from './seedDemoAuthorWithPosts'
 
 /**
  * Ordem respeitando FKs: users → posts → media → comments → ratings → friendships → mentions.
@@ -23,7 +24,9 @@ export async function runAllSeeds(prisma: PrismaClient): Promise<void> {
   await seedFriendships(prisma, d.friendships)
   await seedPostMentions(prisma, d.postMentions)
 
+  await seedDemoAuthorWithPosts(prisma)
+
   console.log(
-    `Seed OK: ${d.users.length} users, ${d.posts.length} posts, ${d.postMedia.length} media, ${d.comments.length} comments, ${d.ratings.length} ratings, ${d.friendships.length} friendships, ${d.postMentions.length} mentions.`,
+    `Seed OK: ${d.users.length} users, ${d.posts.length} posts, ${d.postMedia.length} media, ${d.comments.length} comments, ${d.ratings.length} ratings, ${d.friendships.length} friendships, ${d.postMentions.length} mentions (+ demo author com 2 posts).`,
   )
 }

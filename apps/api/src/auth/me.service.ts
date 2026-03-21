@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common'
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import type { FixtureReadModelPort } from '../application/ports/fixture-read-model.port'
@@ -56,5 +56,23 @@ export class MeService {
     if (!authorizationHeader?.startsWith('Bearer ')) return null
     const t = authorizationHeader.slice(7).trim()
     return t.length > 0 ? t : null
+  }
+
+  /** `sub` do access JWT (Bearer). Lança 401 se token inválido ou ausente. */
+  async requireUserIdFromBearer(authorizationHeader: string | undefined): Promise<string> {
+    const token = this.extractBearer(authorizationHeader)
+    if (!token) {
+      throw new UnauthorizedException('Não autenticado')
+    }
+    try {
+      const payload = await this.jwt.verifyAsync<{ sub: string }>(token)
+      if (typeof payload.sub !== 'string' || !payload.sub) {
+        throw new UnauthorizedException('Token inválido')
+      }
+      return payload.sub
+    } catch (e) {
+      if (e instanceof UnauthorizedException) throw e
+      throw new UnauthorizedException('Token inválido')
+    }
   }
 }

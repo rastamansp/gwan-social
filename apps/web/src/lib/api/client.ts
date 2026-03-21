@@ -38,6 +38,17 @@ function statusTextFallback(status: number): string {
   return `Erro HTTP ${status}`
 }
 
+function wrapFetchError(err: unknown): never {
+  if (err instanceof ApiHttpError) throw err
+  if (err instanceof Error && err.name === 'AbortError') {
+    throw new ApiHttpError(0, 'Pedido expirou ou foi cancelado.')
+  }
+  if (err instanceof TypeError && typeof err.message === 'string') {
+    throw new ApiHttpError(0, 'Sem ligação ao servidor. Confirma que a API está a correr e a URL em VITE_API_URL.')
+  }
+  throw err
+}
+
 function authHeaders(skipAuth?: boolean): HeadersInit {
   if (skipAuth) return {}
   const t = getAccessToken()
@@ -86,6 +97,58 @@ export async function apiGet<T>(
       throw new ApiHttpError(res.status, parseErrorMessage(res.status, text))
     }
     return (await res.json()) as T
+  } catch (err) {
+    return wrapFetchError(err)
+  } finally {
+    if (timeout) window.clearTimeout(timeout)
+  }
+}
+
+export async function apiPatch<T>(
+  path: string,
+  body: unknown,
+  options?: {
+    timeoutMs?: number
+    skipAuth?: boolean
+  },
+): Promise<T> {
+  const base = getApiBaseUrl()
+  if (!base) {
+    throw new Error('VITE_API_URL não definida')
+  }
+
+  const url = joinBaseAndPath(base, path)
+  const ctrl = new AbortController()
+  const timeoutMs = options?.timeoutMs ?? DEFAULT_TIMEOUT_MS
+  const timeout =
+    timeoutMs > 0
+      ? window.setTimeout(() => ctrl.abort(), timeoutMs)
+      : 0
+
+  try {
+    const res = await fetch(url, {
+      method: 'PATCH',
+      credentials: 'include',
+      signal: ctrl.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        ...authHeaders(options?.skipAuth),
+      },
+      body: JSON.stringify(body),
+    })
+    if (res.status === 204) {
+      return undefined as T
+    }
+    const text = await res.text()
+    if (!res.ok) {
+      throw new ApiHttpError(res.status, parseErrorMessage(res.status, text))
+    }
+    if (!text) {
+      return undefined as T
+    }
+    return JSON.parse(text) as T
+  } catch (err) {
+    return wrapFetchError(err)
   } finally {
     if (timeout) window.clearTimeout(timeout)
   }
@@ -134,6 +197,8 @@ export async function apiPost<T>(
       return undefined as T
     }
     return JSON.parse(text) as T
+  } catch (err) {
+    return wrapFetchError(err)
   } finally {
     if (timeout) window.clearTimeout(timeout)
   }

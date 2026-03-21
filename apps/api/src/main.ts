@@ -34,7 +34,7 @@ async function bootstrap() {
     .setDescription(
       [
         'API REST Gwan Social: rotas de leitura (feed, posts, utilizadores) servidas a partir do read model em **gwan-social.fixtures.json** (paginação por cursor base64url).',
-        '**Autenticação:** registo, login, refresh e logout persistem utilizadores e sessões em **PostgreSQL (Prisma)**; envia `Authorization: Bearer <accessToken>` em `GET /me`.',
+        '**Autenticação:** registo, login, refresh e logout persistem utilizadores e sessões em **PostgreSQL (Prisma)**; envia `Authorization: Bearer <accessToken>` em `GET /me` e `PATCH /me` (atualizar nome, utilizador e bio).',
         'OpenAPI gerado a partir de DTOs Nest; experimenta os esquemas em "Try it out" ou importa `/api/openapi.json`.',
       ].join('\n\n'),
     )

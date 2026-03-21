@@ -54,8 +54,8 @@ export class PostsController {
     description: 'ID desconhecido.',
     type: HttpExceptionResponseDto,
   })
-  getOne(@Param('postId') postId: string) {
-    const post = this.getPostById.execute(postId)
+  async getOne(@Param('postId') postId: string) {
+    const post = await this.getPostById.execute(postId)
     if (!post) {
       throw new NotFoundException('Post não encontrado')
     }

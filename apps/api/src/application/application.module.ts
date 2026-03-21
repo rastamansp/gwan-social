@@ -9,6 +9,7 @@ import { ListNearbyPostsUseCase } from './use-cases/list-nearby-posts.use-case'
 import { ListUserFriendsUseCase } from './use-cases/list-user-friends.use-case'
 import { ListUserPostsUseCase } from './use-cases/list-user-posts.use-case'
 import { ListUserRatingsReceivedUseCase } from './use-cases/list-user-ratings-received.use-case'
+import { UpdateMyProfileUseCase } from './use-cases/update-my-profile.use-case'
 
 const useCases = [
   GetHealthUseCase,
@@ -20,6 +21,7 @@ const useCases = [
   ListUserPostsUseCase,
   ListUserRatingsReceivedUseCase,
   ListUserFriendsUseCase,
+  UpdateMyProfileUseCase,
 ]
 
 @Module({

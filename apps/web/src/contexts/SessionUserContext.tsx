@@ -9,7 +9,10 @@ import {
 } from 'react'
 import type { UserProfile } from '@/data/legacyFeed.types'
 import { currentUser, users } from '@/data/mockUsers'
+import { scoreToTier } from '@/data/socialPosts.adapters'
+import { decodeJwtPayload } from '@/lib/auth/jwtPayload'
 import { getAccessToken } from '@/lib/api/authStorage'
+import { ApiHttpError } from '@/lib/api/client'
 import { isApiEnabled } from '@/lib/api/config'
 import { fetchMe } from '@/lib/api/endpoints'
 import { mapApiMeUserToProfile } from '@/lib/api/mapApiUserToProfile'
@@ -23,6 +26,8 @@ type SessionUserContextValue = {
   profile: UserProfile
   userId: string
   updateProfile: (patch: SessionUserOverrides) => void
+  /** Remove overrides locais (ex.: após PATCH /me na API). */
+  clearProfileOverrides: () => void
   resolveUser: (id: string) => UserProfile | undefined
   /** Regista perfis obtidos da API (ex.: visitantes de `/user/:id`, amigos). */
   registerApiUsers: (list: UserProfile[]) => void
@@ -58,6 +63,14 @@ export function SessionUserProvider({ children }: { children: ReactNode }) {
 
   const [apiMeProfile, setApiMeProfile] = useState<UserProfile | null>(null)
   const [directory, setDirectory] = useState<Record<string, UserProfile>>({})
+  /** Re-render quando o token em `localStorage` muda (sem `useAuth` — provider acima). */
+  const [authTokenEpoch, setAuthTokenEpoch] = useState(0)
+
+  useEffect(() => {
+    const bump = () => setAuthTokenEpoch((n) => n + 1)
+    window.addEventListener('gwan-auth-changed', bump)
+    return () => window.removeEventListener('gwan-auth-changed', bump)
+  }, [])
 
   useEffect(() => {
     if (!isApiEnabled()) return
@@ -75,9 +88,12 @@ export function SessionUserProvider({ children }: { children: ReactNode }) {
           setApiMeProfile(p)
           setDirectory((d) => ({ ...d, [p.id]: p }))
         })
-        .catch(() => {
+        .catch((err: unknown) => {
           if (cancelled) return
           setApiMeProfile(null)
+          if (err instanceof ApiHttpError && err.status === 401) {
+            window.dispatchEvent(new Event('gwan-session-invalid'))
+          }
         })
     }
 
@@ -89,15 +105,42 @@ export function SessionUserProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const baseProfile = apiMeProfile ?? mockBase
+  const baseProfile = useMemo((): UserProfile => {
+    if (!isApiEnabled()) return mockBase
+    const token = getAccessToken()
+    if (!token) return mockBase
+    if (apiMeProfile) return apiMeProfile
+    const payload = decodeJwtPayload(token)
+    if (payload?.sub && payload.username) {
+      const rating = 0
+      return {
+        id: payload.sub,
+        name: payload.username,
+        handle: `@${payload.username}`,
+        avatar: '',
+        rating,
+        ratingCount: 0,
+        bio: '',
+        tier: scoreToTier(rating),
+      }
+    }
+    return mockBase
+  }, [mockBase, apiMeProfile, authTokenEpoch])
   const userId = baseProfile.id
 
   const [overrides, setOverrides] = useState<SessionUserOverrides>(readStoredOverrides)
 
-  const profile = useMemo(
-    () => ({ ...baseProfile, ...overrides }) as UserProfile,
-    [baseProfile, overrides],
-  )
+  const profile = useMemo((): UserProfile => {
+    const merged = { ...baseProfile, ...overrides } as UserProfile
+    if (
+      isApiEnabled() &&
+      overrides.bio === '' &&
+      baseProfile.bio.trim().length > 0
+    ) {
+      merged.bio = baseProfile.bio
+    }
+    return merged
+  }, [baseProfile, overrides])
 
   const updateProfile = useCallback((patch: SessionUserOverrides) => {
     setOverrides((prev) => {
@@ -105,6 +148,11 @@ export function SessionUserProvider({ children }: { children: ReactNode }) {
       writeStoredOverrides(next)
       return next
     })
+  }, [])
+
+  const clearProfileOverrides = useCallback(() => {
+    setOverrides({})
+    writeStoredOverrides({})
   }, [])
 
   const registerApiUsers = useCallback((list: UserProfile[]) => {
@@ -131,10 +179,11 @@ export function SessionUserProvider({ children }: { children: ReactNode }) {
       profile,
       userId,
       updateProfile,
+      clearProfileOverrides,
       resolveUser,
       registerApiUsers,
     }),
-    [profile, userId, updateProfile, resolveUser, registerApiUsers],
+    [profile, userId, updateProfile, clearProfileOverrides, resolveUser, registerApiUsers],
   )
 
   return <SessionUserContext.Provider value={value}>{children}</SessionUserContext.Provider>

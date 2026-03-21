@@ -19,13 +19,14 @@ Listar casos de uso com **ID estável** para rastreabilidade na aplicação **Gw
 | GET | `feed` | Feed principal; `limit`, `cursor` |
 | GET | `posts/nearby` | Posts próximos (demo); `limit`, `cursor` |
 | GET | `posts/:postId` | Detalhe de post; 404 se inexistente |
-| GET | `me` | Utilizador de sessão demo no fixture; 404 se inválido |
+| GET | `me` | Utilizador atual (JWT Bearer ou fallback fixture em dev) |
+| PATCH | `me` | Atualizar perfil próprio (`displayName`, `username`, `bio`); Bearer obrigatório — **UC-PROF-02** (sem upload de ficheiros) |
 | GET | `users/:userId` | Perfil público; 404 se inexistente |
 | GET | `users/:userId/posts` | Posts do autor; paginação |
 | GET | `users/:userId/ratings/received` | Avaliações recebidas; paginação |
 | GET | `users/:userId/friends` | IDs de amigos; paginação |
 
-**Rastreabilidade fraca com UCs:** leitura de perfil/listas aproxima **UC-PROF-01** e **UC-RAT-02** apenas como **pré-visualização de contrato**, não substitui privacidade, autenticação nem persistência. **UC-AUTH-01**, **UC-AUTH-02** e escritas (**UC-PROF-02**, **UC-INT-01**, **UC-RAT-01**, etc.) **não** são satisfeitas por esta API.
+**Rastreabilidade com UCs:** leitura de perfil/listas aproxima **UC-PROF-01** e **UC-RAT-02** como contrato de leitura. **UC-PROF-02** é coberto em parte por **`PATCH /me`** (texto; sem média). **UC-AUTH-01** / **UC-AUTH-02** vivem em **`/auth/*`** com PostgreSQL. Escritas como **UC-INT-01**, **UC-RAT-01**, etc. **não** estão nesta API.
 
 ## Autenticação e identidade
 

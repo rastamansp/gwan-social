@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import { AuthPageShell } from '@/components/auth/AuthPageShell'
 import { DEMO_TEST_PASSWORD, DEMO_TEST_USER, useAuth } from '@/contexts/AuthContext'
+import { isApiEnabled } from '@/lib/api/config'
 import { registerPath } from '@/lib/routes'
 import { cn } from '@/lib/utils'
 
@@ -24,6 +25,8 @@ export default function LoginPage() {
     return <Navigate to={safeRedirect} replace />
   }
 
+  const apiMode = isApiEnabled()
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
@@ -42,14 +45,21 @@ export default function LoginPage() {
     <AuthPageShell
       title="Entrar"
       subtitle={
-        <>
-          Utilizador e senha (demonstração local). Conta de teste:{' '}
-          <strong className="text-foreground">
-            {DEMO_TEST_USER}
-          </strong>{' '}
-          /{' '}
-          <strong className="text-foreground">{DEMO_TEST_PASSWORD}</strong>
-        </>
+        apiMode ? (
+          <>
+            Sessão via API Nest (<code className="rounded bg-muted px-1 py-0.5 text-xs">POST /auth/login</code>
+            ). Utilizador e senha são os da base de dados (ex.: conta criada em registo ou seed).
+          </>
+        ) : (
+          <>
+            Utilizador e senha (demonstração local). Conta de teste:{' '}
+            <strong className="text-foreground">
+              {DEMO_TEST_USER}
+            </strong>{' '}
+            /{' '}
+            <strong className="text-foreground">{DEMO_TEST_PASSWORD}</strong>
+          </>
+        )
       }
       footer={
         <>
@@ -118,7 +128,9 @@ export default function LoginPage() {
       </form>
 
       <p className="mt-6 border-t border-border/50 pt-6 text-center text-xs text-muted-foreground">
-        Modo demonstração: nada é enviado a um servidor; a sessão fica guardada neste browser.
+        {apiMode
+          ? 'Os tokens JWT ficam guardados neste browser (localStorage). Confirma CORS e VITE_API_URL se algo falhar.'
+          : 'Modo demonstração: nada é enviado a um servidor; a sessão fica guardada neste browser.'}
       </p>
     </AuthPageShell>
   )

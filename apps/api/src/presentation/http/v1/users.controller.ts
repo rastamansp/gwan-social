@@ -49,12 +49,12 @@ export class UsersController {
   @ApiQuery({ name: 'cursor', required: false, description: cursorDesc })
   @ApiOkResponse({ type: PaginatedSocialPostDto })
   @ApiNotFoundResponse({ description: 'Utilizador inexistente no fixture.', type: HttpExceptionResponseDto })
-  userPosts(
+  async userPosts(
     @Param('userId') userId: string,
     @Query('limit') limit?: string,
     @Query('cursor') cursor?: string,
   ) {
-    const page = this.listUserPosts.execute({ userId, limit, cursor })
+    const page = await this.listUserPosts.execute({ userId, limit, cursor })
     if (!page) throw userNotFound()
     return page
   }
@@ -74,12 +74,12 @@ export class UsersController {
   @ApiQuery({ name: 'cursor', required: false, description: cursorDesc })
   @ApiOkResponse({ type: PaginatedProfileRatedEntryDto })
   @ApiNotFoundResponse({ type: HttpExceptionResponseDto })
-  userRatings(
+  async userRatings(
     @Param('userId') userId: string,
     @Query('limit') limit?: string,
     @Query('cursor') cursor?: string,
   ) {
-    const page = this.listUserRatings.execute({ userId, limit, cursor })
+    const page = await this.listUserRatings.execute({ userId, limit, cursor })
     if (!page) throw userNotFound()
     return page
   }
@@ -99,23 +99,27 @@ export class UsersController {
   @ApiQuery({ name: 'cursor', required: false, description: cursorDesc })
   @ApiOkResponse({ type: PaginatedFriendIdsDto })
   @ApiNotFoundResponse({ type: HttpExceptionResponseDto })
-  userFriends(
+  async userFriends(
     @Param('userId') userId: string,
     @Query('limit') limit?: string,
     @Query('cursor') cursor?: string,
   ) {
-    const page = this.listUserFriends.execute({ userId, limit, cursor })
+    const page = await this.listUserFriends.execute({ userId, limit, cursor })
     if (!page) throw userNotFound()
     return page
   }
 
   @Get('users/:userId')
-  @ApiOperation({ summary: 'Perfil público', description: 'Dados de perfil a partir do read model (fixtures).' })
+  @ApiOperation({
+    summary: 'Perfil público',
+    description:
+      'Read model: utilizadores do fixture JSON; se o id existir só em PostgreSQL (ex.: registo ou seed), os dados vêm do Prisma.',
+  })
   @ApiParam({ name: 'userId', example: 'user_001' })
   @ApiOkResponse({ type: PublicProfileResponseDto })
   @ApiNotFoundResponse({ type: HttpExceptionResponseDto })
-  userProfile(@Param('userId') userId: string) {
-    const user = this.getUserProfile.execute(userId)
+  async userProfile(@Param('userId') userId: string) {
+    const user = await this.getUserProfile.execute(userId)
     if (!user) throw userNotFound()
     return user
   }

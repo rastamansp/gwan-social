@@ -1,8 +1,11 @@
-import { useCallback, useId, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { Link, Navigate, useLocation, useParams } from 'react-router-dom'
 import { Camera, Loader2 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useSessionUser } from '@/contexts/SessionUserContext'
+import { ApiHttpError } from '@/lib/api/client'
+import { isApiEnabled } from '@/lib/api/config'
+import { fetchPatchMe } from '@/lib/api/endpoints'
 import { loginPath, userProfilePath } from '@/lib/routes'
 import { cn } from '@/lib/utils'
 
@@ -15,9 +18,13 @@ function normalizeHandle(raw: string) {
   return `@${withoutAt}`
 }
 
+function handleToUsername(raw: string): string {
+  return raw.trim().replace(/^@+/, '').toLowerCase()
+}
+
 export default function EditProfilePage() {
   const { isAuthenticated } = useAuth()
-  const { userId: sessionId, profile, updateProfile } = useSessionUser()
+  const { userId: sessionId, profile, updateProfile, clearProfileOverrides } = useSessionUser()
   const { userId = '' } = useParams()
   const { pathname, search } = useLocation()
   const formId = useId()
@@ -31,6 +38,17 @@ export default function EditProfilePage() {
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
   const [loadingFile, setLoadingFile] = useState(false)
+  const [saving, setSaving] = useState(false)
+
+  const apiMode = isApiEnabled()
+  const photoDisabled = apiMode
+
+  useEffect(() => {
+    setName(profile.name)
+    setHandle(profile.handle)
+    setBio(profile.bio ?? '')
+    setAvatarPreview(profile.avatar)
+  }, [profile.id, profile.name, profile.handle, profile.bio, profile.avatar])
 
   if (!isAuthenticated) {
     const from = encodeURIComponent(`${pathname}${search}`)
@@ -77,7 +95,7 @@ export default function EditProfilePage() {
     reader.readAsDataURL(file)
   }, [])
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     const n = name.trim()
@@ -90,6 +108,40 @@ export default function EditProfilePage() {
       setError('Indica um nome de utilizador (@utilizador).')
       return
     }
+    const username = handleToUsername(h)
+    if (username.length < 3) {
+      setError('Utilizador: mínimo 3 caracteres.')
+      return
+    }
+    if (!/^[a-z0-9_]+$/.test(username)) {
+      setError('Utilizador: só letras minúsculas, números e underscore (_).')
+      return
+    }
+
+    if (apiMode) {
+      setSaving(true)
+      try {
+        await fetchPatchMe({
+          displayName: n,
+          username,
+          bio: bio.trim(),
+        })
+        clearProfileOverrides()
+        window.dispatchEvent(
+          new CustomEvent<{ username: string }>('gwan-profile-updated', { detail: { username } }),
+        )
+        window.dispatchEvent(new Event('gwan-auth-changed'))
+        setPendingAvatarDataUrl(null)
+        setSaved(true)
+        window.setTimeout(() => setSaved(false), 3500)
+      } catch (err) {
+        setError(err instanceof ApiHttpError ? err.message : 'Não foi possível guardar o perfil.')
+      } finally {
+        setSaving(false)
+      }
+      return
+    }
+
     updateProfile({
       name: n,
       handle: h,
@@ -116,8 +168,9 @@ export default function EditProfilePage() {
           Editar perfil
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Alterações guardadas neste dispositivo (demonstração — sem API). Quando existir backend, este
-          formulário passará a sincronizar com o servidor.
+          {apiMode
+            ? 'Os dados abaixo são guardados na API (PostgreSQL) com o teu token de sessão. A foto de perfil por ficheiro ainda não está ligada ao servidor.'
+            : 'Alterações guardadas neste dispositivo (demonstração — sem API). Quando existir backend, este formulário passará a sincronizar com o servidor.'}
         </p>
       </header>
 
@@ -136,7 +189,7 @@ export default function EditProfilePage() {
             <button
               type="button"
               onClick={onPickPhoto}
-              disabled={loadingFile}
+              disabled={loadingFile || photoDisabled}
               className="absolute -bottom-1 -right-1 flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md transition hover:opacity-90 active:scale-95 disabled:opacity-60"
               aria-label="Alterar foto de perfil"
             >
@@ -147,22 +200,27 @@ export default function EditProfilePage() {
               type="file"
               accept="image/*"
               className="sr-only"
+              disabled={photoDisabled}
               onChange={onFileChange}
             />
           </div>
           <div className="min-w-0 flex-1 text-center sm:text-left">
             <p className="text-sm font-medium text-foreground">Foto de perfil</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              JPG, PNG ou WebP · máx. {Math.round(MAX_AVATAR_FILE_BYTES / 1024)} KB
+              {photoDisabled
+                ? 'Com a API ativa, o upload de imagem ainda não está disponível.'
+                : `JPG, PNG ou WebP · máx. ${Math.round(MAX_AVATAR_FILE_BYTES / 1024)} KB`}
             </p>
-            <button
-              type="button"
-              onClick={onPickPhoto}
-              disabled={loadingFile}
-              className="mt-3 text-sm font-medium text-primary underline-offset-2 hover:underline disabled:opacity-50"
-            >
-              Escolher imagem
-            </button>
+            {!photoDisabled ? (
+              <button
+                type="button"
+                onClick={onPickPhoto}
+                disabled={loadingFile}
+                className="mt-3 text-sm font-medium text-primary underline-offset-2 hover:underline disabled:opacity-50"
+              >
+                Escolher imagem
+              </button>
+            ) : null}
           </div>
         </div>
 
@@ -201,8 +259,12 @@ export default function EditProfilePage() {
               value={bio}
               onChange={(ev) => setBio(ev.target.value)}
               rows={4}
+              maxLength={apiMode ? 2000 : undefined}
               className="mt-1.5 w-full resize-y rounded-xl border border-border/80 bg-background px-4 py-2.5 text-sm outline-none ring-primary/20 focus:border-primary/40 focus:ring-2"
             />
+            {apiMode ? (
+              <p className="mt-1 text-xs text-muted-foreground">Máximo 2000 caracteres (limite da API).</p>
+            ) : null}
           </div>
         </div>
 
@@ -213,18 +275,26 @@ export default function EditProfilePage() {
         ) : null}
 
         {saved ? (
-          <p className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-900 ring-1 ring-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-100 dark:ring-emerald-800/60" role="status">
-            Perfil atualizado. A navegação e o feed passam a usar estes dados neste browser.
+          <p
+            className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-900 ring-1 ring-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-100 dark:ring-emerald-800/60"
+            role="status"
+          >
+            {apiMode
+              ? 'Perfil atualizado no servidor.'
+              : 'Perfil atualizado. A navegação e o feed passam a usar estes dados neste browser.'}
           </p>
         ) : null}
 
         <div className="flex flex-wrap gap-3">
           <button
             type="submit"
+            disabled={saving}
             className={cn(
               'inline-flex flex-1 items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition hover:opacity-90 active:scale-[0.98] sm:flex-none',
+              saving && 'opacity-60',
             )}
           >
+            {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden /> : null}
             Guardar alterações
           </button>
           <Link

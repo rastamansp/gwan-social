@@ -2,6 +2,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -170,6 +171,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const next: AuthState = { isAuthenticated: false, username: null }
     setState(next)
     writeStored(next)
+  }, [])
+
+  useEffect(() => {
+    const onSessionInvalid = () => logout()
+    window.addEventListener('gwan-session-invalid', onSessionInvalid)
+    return () => window.removeEventListener('gwan-session-invalid', onSessionInvalid)
+  }, [logout])
+
+  useEffect(() => {
+    const onProfileUpdated = (e: Event) => {
+      const ce = e as CustomEvent<{ username?: string }>
+      const u = ce.detail?.username
+      if (typeof u !== 'string' || u.length < 1) return
+      setState((prev) => {
+        if (!prev.isAuthenticated) return prev
+        const next: AuthState = { isAuthenticated: true, username: u }
+        writeStored(next)
+        return next
+      })
+    }
+    window.addEventListener('gwan-profile-updated', onProfileUpdated)
+    return () => window.removeEventListener('gwan-profile-updated', onProfileUpdated)
   }, [])
 
   const register = useCallback(async (name: string, username: string, password: string) => {

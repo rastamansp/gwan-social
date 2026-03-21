@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react'
 import { AuthPageShell } from '@/components/auth/AuthPageShell'
 import { useAuth } from '@/contexts/AuthContext'
 import { useSessionUser } from '@/contexts/SessionUserContext'
+import { isApiEnabled } from '@/lib/api/config'
 import { loginPath } from '@/lib/routes'
 import { cn } from '@/lib/utils'
 
@@ -24,6 +25,9 @@ export default function RegisterPage() {
   if (isAuthenticated) {
     return <Navigate to="/" replace />
   }
+
+  const apiMode = isApiEnabled()
+  const passwordMin = apiMode ? 8 : 6
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -55,7 +59,11 @@ export default function RegisterPage() {
   return (
     <AuthPageShell
       title="Criar conta"
-      subtitle="Preenche os dados abaixo. É uma simulação local — sem API. Utilizador: min. 3 caracteres (a-z, 0-9, _)."
+      subtitle={
+        apiMode
+          ? 'Preenche os dados. O registo chama a API Nest (POST /auth/register) e grava na base PostgreSQL. Utilizador: min. 3 caracteres (a-z, 0-9, _). Senha: min. 8 caracteres.'
+          : 'Preenche os dados abaixo. É uma simulação local — sem API. Utilizador: min. 3 caracteres (a-z, 0-9, _).'
+      }
       footer={
         <>
           Já tens conta?{' '}
@@ -112,9 +120,9 @@ export default function RegisterPage() {
             value={password}
             onChange={(ev) => setPassword(ev.target.value)}
             required
-            minLength={6}
+            minLength={passwordMin}
             className="mt-1.5 w-full rounded-xl border border-border/80 bg-background px-4 py-2.5 text-sm outline-none ring-primary/20 focus:border-primary/40 focus:ring-2"
-            placeholder="Mínimo 6 caracteres"
+            placeholder={apiMode ? 'Mínimo 8 caracteres (API)' : 'Mínimo 6 caracteres'}
           />
         </div>
         <div>
@@ -129,7 +137,7 @@ export default function RegisterPage() {
             value={confirm}
             onChange={(ev) => setConfirm(ev.target.value)}
             required
-            minLength={6}
+            minLength={passwordMin}
             className="mt-1.5 w-full rounded-xl border border-border/80 bg-background px-4 py-2.5 text-sm outline-none ring-primary/20 focus:border-primary/40 focus:ring-2"
             placeholder="Repete a senha"
           />

@@ -20,10 +20,10 @@ import { RegisterDto } from './dto/register.dto'
 
 @ApiTags('Autenticação')
 @ApiTooManyRequestsResponse({
-  description: 'Limite de taxa: máximo 5 pedidos por 60s por IP nestas rotas.',
+  description: 'Limite de taxa: máximo 25 pedidos por 60s por IP nestas rotas.',
 })
 @Controller('auth')
-@Throttle({ default: { limit: 5, ttl: 60_000 } })
+@Throttle({ default: { limit: 25, ttl: 60_000 } })
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
