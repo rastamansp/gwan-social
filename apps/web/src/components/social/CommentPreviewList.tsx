@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { MouseEvent, ReactNode } from 'react'
 import { Trash2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { formatRelativeTime } from '@/data/socialPosts.adapters'
@@ -89,7 +89,7 @@ export function CommentPreviewList({
                     {c.authorUserId ? (
                       <Link
                         to={`/user/${c.authorUserId}`}
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={(e: MouseEvent<HTMLAnchorElement>) => e.stopPropagation()}
                         className="rounded-sm text-inherit outline-none transition hover:text-nosedive-title hover:underline focus-visible:ring-2 focus-visible:ring-nosedive-star/40 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent"
                       >
                         {c.author}

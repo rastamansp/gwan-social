@@ -160,6 +160,12 @@ export default function EditProfilePage() {
       return
     }
 
+    const emailTrim = email.trim()
+    if (emailTrim && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrim)) {
+      setError('Indica um email válido ou deixa o campo em branco.')
+      return
+    }
+
     if (apiMode) {
       setSaving(true)
       try {

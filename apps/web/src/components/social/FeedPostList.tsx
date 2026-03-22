@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type MouseEvent,
+} from 'react'
 import { MessageCircle } from 'lucide-react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { DeletePostConfirmModal } from '@/components/profile/DeletePostConfirmModal'
@@ -438,7 +445,7 @@ export function FeedPostList() {
                       <Link
                         to={`${loginPath()}?from=${encodeURIComponent(location.pathname + location.search)}`}
                         className="font-medium text-nosedive-star underline-offset-2 hover:underline"
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={(e: MouseEvent<HTMLAnchorElement>) => e.stopPropagation()}
                       >
                         Inicia sessão para comentar
                       </Link>
