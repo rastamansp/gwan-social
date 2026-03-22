@@ -1,4 +1,13 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type FocusEvent,
+  type MouseEvent,
+} from 'react'
 import { createPortal } from 'react-dom'
 import { Link, type LinkProps } from 'react-router-dom'
 import { useSessionUser } from '@/contexts/SessionUserContext'
@@ -70,8 +79,9 @@ export function UserProfileHoverLink({
 }: UserProfileHoverLinkProps) {
   const { resolveUser, registerApiUsers } = useSessionUser()
   const anchorRef = useRef<HTMLSpanElement>(null)
-  const showTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  /** IDs de timer no browser são `number` (evita `NodeJS.Timeout` do @types/node no `tsc -b`). */
+  const showTimerRef = useRef<number | null>(null)
+  const hideTimerRef = useRef<number | null>(null)
   const [open, setOpen] = useState(false)
   const [fetchError, setFetchError] = useState(false)
   const [fetchedProfile, setFetchedProfile] = useState<UserProfile | null>(null)
@@ -202,19 +212,19 @@ export function UserProfileHoverLink({
       to={href}
       className={className}
       aria-describedby={open ? tipId : undefined}
-      onMouseEnter={(e) => {
+      onMouseEnter={(e: MouseEvent<HTMLAnchorElement>) => {
         onMouseEnter?.(e)
         scheduleOpen()
       }}
-      onMouseLeave={(e) => {
+      onMouseLeave={(e: MouseEvent<HTMLAnchorElement>) => {
         onMouseLeave?.(e)
         scheduleClose()
       }}
-      onFocus={(e) => {
+      onFocus={(e: FocusEvent<HTMLAnchorElement>) => {
         onFocus?.(e)
         scheduleOpen()
       }}
-      onBlur={(e) => {
+      onBlur={(e: FocusEvent<HTMLAnchorElement>) => {
         onBlur?.(e)
         scheduleClose()
       }}
