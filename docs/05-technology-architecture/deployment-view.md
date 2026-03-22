@@ -31,8 +31,7 @@ flowchart LR
 
 [apps/api/docker-compose.yml](../../apps/api/docker-compose.yml) constrói e expõe **`apps/api`** (imagem `gwan-social-api`). Porta **host** por omissão **`${API_PORT:-4000}`** → **4000** no container (`PORT=4000`).
 
-- **Leituras (feed, posts, perfis, etc.):** ainda servidas pelo **read model em JSON** (fixtures), via `FixtureReadModelAdapter`.
-- **Utilizadores e auth:** **PostgreSQL** (Prisma) — `DATABASE_URL`, `JWT_SECRET`, migrations — ver [`apps/api/.env.example`](../../apps/api/.env.example) e [database-schema-physical.md](../03-data-architecture/database-schema-physical.md).
+- **Dados:** feed, posts, perfis e demais leituras vêm de **PostgreSQL** (Prisma); auth JWT e utilizadores na mesma base — `DATABASE_URL`, `JWT_SECRET`, migrations — ver [`apps/api/.env.example`](../../apps/api/.env.example) e [database-schema-physical.md](../03-data-architecture/database-schema-physical.md).
 
 **Checklist ao subir a API em produção:** `DATABASE_URL` e `JWT_SECRET` definidos; `npx prisma migrate deploy`; `CORS_ORIGINS` com a origem HTTPS da SPA; `PUBLIC_API_URL` se a API estiver atrás de proxy. O **compose de produção na raiz** ([`docker-compose-production.yml`](../../docker-compose-production.yml)) publica apenas a **web** — a API deve ser deployada à parte (este compose ou outro serviço).
 

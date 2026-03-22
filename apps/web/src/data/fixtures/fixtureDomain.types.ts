@@ -28,8 +28,9 @@ export interface FixturePost {
   id: string
   authorId: string
   type: SocialPostType
-  title: string
-  description: string
+  content?: string
+  title?: string
+  description?: string
   createdAt: string
   visibility: SocialPostVisibility
   category: SocialPostCategory

@@ -138,11 +138,8 @@ export class SocialPostDto {
   @ApiProperty({ enum: ['featured_moment', 'feed_post'] })
   type!: 'featured_moment' | 'feed_post'
 
-  @ApiProperty()
-  title!: string
-
-  @ApiProperty()
-  description!: string
+  @ApiProperty({ description: 'Texto da postagem' })
+  content!: string
 
   @ApiProperty({ description: 'ISO 8601' })
   createdAt!: string

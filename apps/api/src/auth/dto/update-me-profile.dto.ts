@@ -1,4 +1,4 @@
-import { IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator'
+import { IsEmail, IsOptional, IsString, Matches, MaxLength, MinLength, ValidateIf } from 'class-validator'
 
 /** Corpo de `PATCH /me` — atualiza perfil do utilizador autenticado (sem upload de ficheiros). */
 export class UpdateMeProfileDto {
@@ -15,6 +15,19 @@ export class UpdateMeProfileDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(280)
+  headline?: string
+
+  @IsOptional()
+  @IsString()
   @MaxLength(2000)
   bio?: string
+
+  /** Omitir para não alterar; string vazia remove o email. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(254)
+  @ValidateIf((_, v) => typeof v === 'string' && v.trim().length > 0)
+  @IsEmail({}, { message: 'email inválido' })
+  email?: string
 }

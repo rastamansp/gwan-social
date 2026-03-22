@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
+import { ProfileRatingGivenEntryDto } from './profile-rating-given-entry.dto'
 import { ProfileRatedEntryDto } from './profile-rated-entry.dto'
+import { PublicProfileResponseDto } from './public-profile-response.dto'
 import { SocialPostDto } from './social-post-response.dto'
 
 const cursorDesc =
@@ -10,6 +12,9 @@ const limitFeedPostsDesc =
 
 const limitFriendsDesc =
   'Número de IDs (1–100; omissão 50). Lista paginada de amigos aceites.'
+
+const limitUsersDirectoryDesc =
+  'Número de utilizadores por página (1–100; omissão 50). Ordenação: nome de exibição, depois id.'
 
 /** Página de posts (`feed`, `posts/nearby`, `users/:id/posts`). */
 export class PaginatedSocialPostDto {
@@ -39,6 +44,34 @@ export class PaginatedProfileRatedEntryDto {
   hasMore!: boolean
 }
 
+/** Página de avaliações feitas pelo utilizador (`GET /users/:id/ratings/given`). */
+export class PaginatedProfileRatingGivenEntryDto {
+  @ApiProperty({ type: [ProfileRatingGivenEntryDto] })
+  items!: ProfileRatingGivenEntryDto[]
+
+  @ApiProperty({ nullable: true, example: 'eyJpIjo1MH0' })
+  nextCursor!: string | null
+
+  @ApiProperty()
+  hasMore!: boolean
+}
+
+/** Página de perfis públicos (`GET /users`). */
+export class PaginatedPublicProfileDto {
+  @ApiProperty({ type: [PublicProfileResponseDto] })
+  items!: PublicProfileResponseDto[]
+
+  @ApiProperty({
+    nullable: true,
+    description: 'Ausente ou null quando não há mais páginas.',
+    example: 'eyJpIjo1MH0',
+  })
+  nextCursor!: string | null
+
+  @ApiProperty()
+  hasMore!: boolean
+}
+
 /** Página de IDs de amigos (`users/:id/friends`). */
 export class PaginatedFriendIdsDto {
   @ApiProperty({ type: String, isArray: true, description: 'IDs de utilizadores (amizade aceite)' })
@@ -51,4 +84,4 @@ export class PaginatedFriendIdsDto {
   hasMore!: boolean
 }
 
-export { cursorDesc, limitFeedPostsDesc, limitFriendsDesc }
+export { cursorDesc, limitFeedPostsDesc, limitFriendsDesc, limitUsersDirectoryDesc }

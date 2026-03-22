@@ -32,4 +32,7 @@ export class MeUserResponseDto {
 
   @ApiProperty({ example: '@laciepound', description: 'Handle com @' })
   handle!: string
+
+  @ApiPropertyOptional({ nullable: true, description: 'Email da conta (só no utilizador autenticado).' })
+  email!: string | null
 }

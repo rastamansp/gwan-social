@@ -1,29 +1,111 @@
+import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import type { EditorialPost } from '@/data/mockUsers'
+import type { CommentItem } from '@/components/social/CommentPreviewList'
+import type { EditorialPost } from '@/data/legacyFeed.types'
 import type { RatingSpotlightPerson } from '@/data/socialPosts.index'
-import { posts } from '@/data/mockUsers'
 import { UserReputationSidebar } from '@/components/social/UserReputationSidebar'
-import { VoteStarRow } from '@/components/social/VoteStarRow'
 import { cn } from '@/lib/utils'
+
+function EditorialImageGrid({ images }: { images: string[] }) {
+  const n = images.length
+  if (n === 0) return null
+
+  const tileClass =
+    'overflow-hidden rounded-lg bg-white/30 shadow-lg [&_img]:brightness-105 [&_img]:contrast-95'
+
+  if (n === 1) {
+    return (
+      <div className={tileClass}>
+        <img
+          src={images[0]}
+          alt=""
+          className="h-56 w-full object-cover sm:h-72 md:h-96 md:max-h-[420px] lg:h-[420px]"
+        />
+      </div>
+    )
+  }
+
+  if (n === 2) {
+    return (
+      <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+        {images.map((src, i) => (
+          <div key={`${i}-${src.slice(-24)}`} className={tileClass}>
+            <img src={src} alt="" className="h-48 w-full object-cover sm:h-56 md:h-72" />
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  const [a, b, c, ...rest] = images
+  return (
+    <>
+      <div className="grid grid-cols-12 gap-3 sm:gap-4">
+        <div className="col-span-12 md:col-span-7">
+          <div className={tileClass}>
+            <img
+              src={a}
+              alt=""
+              className="h-56 w-full object-cover sm:h-72 md:h-96 md:max-h-[420px] lg:h-[420px]"
+            />
+          </div>
+        </div>
+        <div className="col-span-12 flex flex-col gap-3 sm:gap-4 md:col-span-5">
+          <div className={tileClass}>
+            <img src={b} alt="" className="h-36 w-full object-cover sm:h-40 md:h-[200px]" />
+          </div>
+          <div className={tileClass}>
+            <img src={c} alt="" className="h-36 w-full object-cover sm:h-40 md:h-[200px]" />
+          </div>
+        </div>
+      </div>
+      {rest.length > 0 ? (
+        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4">
+          {rest.map((src, i) => (
+            <div key={`rest-${i}-${src.slice(-20)}`} className={tileClass}>
+              <img src={src} alt="" className="aspect-square w-full object-cover sm:h-40 sm:max-h-52" />
+            </div>
+          ))}
+        </div>
+      ) : null}
+    </>
+  )
+}
 
 interface SocialPostCardProps {
   post: EditorialPost
   className?: string
   /** Quando true, não centraliza verticalmente (uso abaixo de header de detalhe). */
   embedded?: boolean
-  /** Votação mock (1–5); com onVote ativa VoteStarRow na sidebar ou inline. */
+  /** Votação (1–5); com `onVote`, a UI fica na sidebar acima dos comentários. */
   voteValue?: number
   onVote?: (stars: number) => void
   voteFeedback?: string | null
   ratedCountLabel?: string
-  /** `sidebar` (detalhe do post) ou `inline` (feed: estrelas no canto inferior direito da coluna principal). */
-  voteVariant?: 'sidebar' | 'inline'
-  /** Rodapé do cartão editorial, à direita (ex.: página `/post/:id`). */
-  cardFooterVote?: boolean
   /** Sequência para alternar o bloco “quem avaliou” com esmaecer (ex.: detalhe do post). */
   ratingSpotlights?: RatingSpotlightPerson[]
   /** Intervalo entre troca de spotlights (ms). */
   ratingSpotlightIntervalMs?: number
+  /** Conteúdo extra no fim do cartão (ex.: ações e comentários na página de detalhe). */
+  embeddedDetailSlot?: ReactNode
+  /** Com `onVote` na sidebar: se definido, exige estrelas + botão Enviar (ex.: página `/post/:id`). */
+  onVoteSubmit?: () => void
+  voteSubmitting?: boolean
+  voteSubmitDisabled?: boolean
+  /** Aviso persistente no bloco de avaliação (ex.: não podes avaliar o teu post). */
+  voteHint?: string | null
+  /** Se definido, substitui `post.comments` na sidebar (ex.: dados da API com data). */
+  sidebarComments?: CommentItem[]
+  /** CTA quando `sidebarComments` está vazio (só usado com override). */
+  sidebarCommentsEmptySlot?: ReactNode
+  commentCurrentUserId?: string | null
+  /** Sobrescreve `post.authorUserId` para permissão de apagar comentários como dono do post. */
+  postAuthorUserId?: string | null
+  onRequestDeleteComment?: (commentId: string) => void
+  /** Compositor ou outro bloco sob o título «Comentários» na sidebar. */
+  sidebarCommentsBelowTitleSlot?: ReactNode
+  /** Botão ou ação à direita do título «Comentários (n)». */
+  sidebarCommentsTitleTrailing?: ReactNode
 }
 
 /** Card editorial estilo Nosedive: galeria + sidebar. Apenas apresentação. */
@@ -35,18 +117,31 @@ export function SocialPostCard({
   onVote,
   voteFeedback,
   ratedCountLabel,
-  voteVariant = 'sidebar',
-  cardFooterVote = false,
   ratingSpotlights,
   ratingSpotlightIntervalMs,
+  embeddedDetailSlot,
+  onVoteSubmit,
+  voteSubmitting = false,
+  voteSubmitDisabled = false,
+  voteHint,
+  sidebarComments,
+  sidebarCommentsEmptySlot,
+  commentCurrentUserId,
+  postAuthorUserId: postAuthorUserIdProp,
+  onRequestDeleteComment,
+  sidebarCommentsBelowTitleSlot,
+  sidebarCommentsTitleTrailing,
 }: SocialPostCardProps) {
-  const authorUserId = posts.find((p) => p.id === post.id)?.userId
-  const profileHref = authorUserId ? `/user/${authorUserId}` : null
+  const authorId = post.authorUserId
+  const postAuthorUserIdForComments = postAuthorUserIdProp ?? post.authorUserId ?? null
+  const profileHref = authorId ? `/user/${authorId}` : null
 
-  const sidebarOnVote = voteVariant === 'sidebar' ? onVote : undefined
-  const sidebarVoteValue = voteVariant === 'sidebar' ? voteValue : undefined
-  const sidebarFeedback = voteVariant === 'sidebar' ? voteFeedback : undefined
+  const sidebarOnVote = onVote
+  const sidebarVoteValue = voteValue
+  const sidebarFeedback = voteFeedback
   const countLabelId = `sidebar-count-${post.id}`
+  const sidebarCommentItems = sidebarComments ?? post.comments
+  const sidebarEmptySlot = sidebarComments !== undefined ? sidebarCommentsEmptySlot : undefined
 
   return (
     <div
@@ -100,109 +195,47 @@ export function SocialPostCard({
                     {post.user.rating}
                   </span>
                 </div>
-                <p className="mt-1 break-words font-display text-2xl font-extralight leading-tight tracking-tight text-nosedive-title sm:text-3xl md:text-4xl lg:text-5xl">
-                  {post.title}
+                <p className="mt-1 max-w-3xl break-words whitespace-pre-wrap font-display text-2xl font-extralight leading-tight tracking-tight text-nosedive-title sm:text-3xl md:text-4xl lg:text-5xl">
+                  {post.content}
                 </p>
                 <div className="mt-3 h-0.5 w-16 rounded-full bg-nosedive-line" />
               </div>
             </header>
 
-            <div className="grid grid-cols-12 gap-3 sm:gap-4">
-              <div className="col-span-12 md:col-span-7">
-                <div className="overflow-hidden rounded-lg bg-white/30 shadow-lg">
-                  <img
-                    src={post.images[0]}
-                    alt=""
-                    className="h-56 w-full object-cover brightness-105 contrast-95 sm:h-72 md:h-96 md:max-h-[420px] lg:h-[420px]"
-                  />
-                </div>
-              </div>
-              <div className="col-span-12 flex flex-col gap-3 sm:gap-4 md:col-span-5">
-                <div className="overflow-hidden rounded-lg bg-white/30 shadow-lg">
-                  <img
-                    src={post.images[1]}
-                    alt=""
-                    className="h-36 w-full object-cover brightness-105 contrast-95 sm:h-40 md:h-[200px]"
-                  />
-                </div>
-                <div className="overflow-hidden rounded-lg bg-white/30 shadow-lg">
-                  <img
-                    src={post.images[2]}
-                    alt=""
-                    className="h-36 w-full object-cover brightness-105 contrast-95 sm:h-40 md:h-[200px]"
-                  />
-                </div>
-              </div>
-            </div>
+            <EditorialImageGrid images={post.images} />
 
-            <p className="mt-3 text-xs font-light text-nosedive-muted opacity-90 sm:mt-4 sm:text-sm">
-              {post.taggedPeople}
+            <p className="mt-3 font-display text-xs font-light text-nosedive-muted opacity-90 sm:mt-4 sm:text-sm">
+              {post.publishedAtLabel
+                ? `Publicado em ${post.publishedAtLabel}`
+                : post.taggedPeople}
             </p>
-
-            {voteVariant === 'inline' && onVote ? (
-              <div
-                className="mt-4 flex flex-col items-end gap-2 border-t border-white/25 pt-4"
-                onClick={(e) => e.stopPropagation()}
-                onKeyDown={(e) => e.stopPropagation()}
-                role="presentation"
-              >
-                <span
-                  id={`inline-vote-label-${post.id}`}
-                  className="text-xs font-light uppercase tracking-[0.2em] text-nosedive-muted"
-                >
-                  Avaliar
-                </span>
-                <VoteStarRow
-                  value={voteValue ?? 0}
-                  onChange={onVote}
-                  labelledBy={`inline-vote-label-${post.id}`}
-                />
-                {voteFeedback ? (
-                  <p className="max-w-sm text-right text-xs font-light italic text-nosedive-muted" role="status">
-                    {voteFeedback}
-                  </p>
-                ) : null}
-              </div>
-            ) : null}
           </div>
 
           <UserReputationSidebar
             data={post.sideRating}
-            comments={post.comments}
+            comments={sidebarCommentItems}
+            commentsEmptySlot={sidebarEmptySlot}
             voteValue={sidebarVoteValue}
             onVote={sidebarOnVote}
             voteFeedback={sidebarFeedback}
+            onVoteSubmit={onVoteSubmit}
+            voteSubmitting={voteSubmitting}
+            voteSubmitDisabled={voteSubmitDisabled}
+            voteHint={voteHint}
             ratedCountLabel={ratedCountLabel}
             countLabelId={countLabelId}
             ratingSpotlights={ratingSpotlights}
             ratingSpotlightIntervalMs={ratingSpotlightIntervalMs}
+            commentCurrentUserId={commentCurrentUserId}
+            postAuthorUserId={postAuthorUserIdForComments}
+            onRequestDeleteComment={onRequestDeleteComment}
+            commentsBelowTitleSlot={sidebarCommentsBelowTitleSlot}
+            commentsTitleTrailing={sidebarCommentsTitleTrailing}
           />
         </div>
 
-        {cardFooterVote && onVote ? (
-          <div
-            className="mt-8 flex flex-col items-end gap-2 border-t border-white/25 pt-6"
-            onClick={(e) => e.stopPropagation()}
-            onKeyDown={(e) => e.stopPropagation()}
-            role="presentation"
-          >
-            <span
-              id={`card-footer-vote-${post.id}`}
-              className="text-xs font-light uppercase tracking-[0.2em] text-nosedive-muted"
-            >
-              Avaliar
-            </span>
-            <VoteStarRow
-              value={voteValue ?? 0}
-              onChange={onVote}
-              labelledBy={`card-footer-vote-${post.id}`}
-            />
-            {voteFeedback ? (
-              <p className="max-w-sm text-right text-xs font-light italic text-nosedive-muted" role="status">
-                {voteFeedback}
-              </p>
-            ) : null}
-          </div>
+        {embeddedDetailSlot ? (
+          <div className="mt-6 border-t border-white/20 pt-6 text-foreground">{embeddedDetailSlot}</div>
         ) : null}
       </div>
     </div>

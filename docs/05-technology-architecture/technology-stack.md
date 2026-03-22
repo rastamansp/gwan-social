@@ -9,9 +9,9 @@ Registrar a **stack fixa** acordada para o monorepo **gwan-social** e premissas 
 | Camada | Tecnologia | Versão | Notas |
 |--------|------------|--------|--------|
 | Monorepo | **npm** workspaces | npm 10+ (com Node 20+) | Raiz `gwan-social`; **pnpm** opcional (não versionado no repo) |
-| Backend API | **Node.js** + **NestJS** | LTS + major estável | **`apps/api` implementada** (read model fixtures, `/api/v1`, OpenAPI); persistência, auth e filas — **planeadas** |
+| Backend API | **Node.js** + **NestJS** | LTS + major estável | **`apps/api` implementada** (`/api/v1`, OpenAPI, **PostgreSQL/Prisma**, **JWT**); filas/worker — **planeadas** |
 | Worker | **Python** + **FastAPI** | 3.11+ sugerido | Workers para fila; HTTP opcional para health — **planeado** |
-| Web | **React** + **Vite** + **Tailwind CSS** | React 19, Vite 6, RR 7, Tailwind 4 | SPA em `apps/web` — **implementado** (mock) |
+| Web | **React** + **Vite** + **Tailwind CSS** | React 19, Vite 6, RR 7, Tailwind 4 | SPA em `apps/web` — **implementado** (consome API com `VITE_API_URL`) |
 | Mobile | **React Native** | (definir) | Mesma API **`/api/v1`** — **planeado** |
 | Banco | **PostgreSQL** | 15+ sugerido | SoR transacional |
 | Cache / fila | **Redis** | 7+ sugerido | Cache + BullMQ/estrutura de fila |

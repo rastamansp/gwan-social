@@ -12,8 +12,10 @@ export type DomainPost = {
   id: string
   authorId: string
   type: string
-  title: string
-  description: string
+  /** Texto único; se ausente, funde-se `title` + `description` legados do JSON. */
+  content?: string
+  title?: string
+  description?: string
   createdAt: string
   visibility: string
   category: string

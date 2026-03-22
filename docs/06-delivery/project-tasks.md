@@ -32,8 +32,9 @@ Referência: [mvp-roadmap.md](mvp-roadmap.md), [backlog.md](backlog.md).
 
 - [x] `package.json` raiz com **npm workspaces** (`apps/*`, `packages/*`) — ver [README.md](../../README.md) (`pnpm-workspace.yaml` opcional quando adotar pnpm)
 - [x] Compose na raiz + [docker/Dockerfile](../../docker/Dockerfile): **apenas** build da web e Nginx (`docker-compose.yml`, `docker-compose-production.yml` com Traefik) — **não** substitui o Compose M1 com Postgres, Redis, API e worker
-- [x] `apps/api`: NestJS com **read model fixtures** — `presentation/http/v1`, `application` (use cases + porto), `infrastructure/fixtures`, prefixo **`/api/v1`**, OpenAPI/Swagger — ver [README.md](../../README.md)
-- [ ] `apps/api`: persistência PostgreSQL, auth JWT, publicação em fila e alinhamento a [api-standards.md](../07-standards/api-standards.md) (envelope `{ data, meta }`)
+- [x] `apps/api`: NestJS — `presentation/http/v1`, `application` (use cases), `infrastructure/prisma`, prefixo **`/api/v1`**, OpenAPI/Swagger — ver [README.md](../../README.md)
+- [x] `apps/api`: persistência **PostgreSQL** (Prisma) e **auth JWT** (`/auth/*`, `/me`, posts do utilizador) — ver [api-standards.md](../07-standards/api-standards.md)
+- [ ] `apps/api`: publicação em fila e envelope normativo `{ data, meta }` (alinhamento futuro a [api-standards.md](../07-standards/api-standards.md))
 - [ ] `apps/worker-python`: esqueleto FastAPI + worker + consumo Redis (conforme ADR futuro)
 - [ ] `packages/shared-types` mínimo (contratos base)
 - [ ] `packages/shared-utils` mínimo (se necessário na M1)

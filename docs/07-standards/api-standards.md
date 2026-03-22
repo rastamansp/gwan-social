@@ -13,7 +13,7 @@ Padronizar a API HTTP exposta por **`apps/api`** (NestJS) para `web` e `mobile`.
 
 - **Registo / login:** `POST /api/v1/auth/register`, `POST /api/v1/auth/login` — passwords com Argon2id; respostas incluem `accessToken`, `refreshToken`, `expiresIn`, `tokenType`.  
 - **Refresh / logout:** `POST /api/v1/auth/refresh`, `POST /api/v1/auth/logout` (corpo JSON com `refreshToken`).  
-- **Sessão:** `GET /api/v1/me` com cabeçalho `Authorization: Bearer <accessToken>` devolve o perfil do utilizador na base; sem token, `401` salvo se `AUTH_FIXTURE_ME_FALLBACK=true` (modo demo com fixture).  
+- **Sessão:** `GET /api/v1/me` com cabeçalho `Authorization: Bearer <accessToken>` devolve o perfil do utilizador na base; sem token, **`401`**.  
 - **Segredos:** `JWT_SECRET` (mín. 32 caracteres em produção), tempos em `JWT_ACCESS_EXPIRES_SEC` / `JWT_REFRESH_EXPIRES_SEC` — ver [`apps/api/.env.example`](../../apps/api/.env.example).  
 - **Rate limit:** rotas `/auth/*` com limite mais estrito (throttle global + override por controlador).
 
@@ -23,13 +23,13 @@ Padronizar a API HTTP exposta por **`apps/api`** (NestJS) para `web` e `mobile`.
 |----------|---------|
 | **OpenAPI JSON** | `GET /api/openapi.json` |
 | **Swagger UI** | `GET /api/` (redirecionamento de `/api` para barra final) |
-| **Raiz** | `GET /` — JSON com links (`swaggerUi`, `openApiJson`, `health`, `fixturesPath`) |
+| **Raiz** | `GET /` — JSON com links (`swaggerUi`, `openApiJson`, `health`) |
 
 Gerado com **`@nestjs/swagger`** em `apps/api`; publicar artefato por release quando a API for de produção.
 
 ## As-is vs alvo normativo (envelope e erros)
 
-A API de **fixtures** (`apps/api`) devolve **JSON direto** em sucesso (ex.: `{ "ok": true }`, listas paginadas). Para **erros HTTP** nas rotas de leitura e sessão, usa o **corpo padrão do Nest** ao lançar `NotFoundException` / `UnauthorizedException` (ex.: `{ "statusCode": 404, "message": "…", "error": "Not Found" }`). O **alvo** envelope abaixo aplica-se à API transacional de produto:
+A API (`apps/api`) devolve **JSON direto** em sucesso (listas paginadas, DTOs). Para **erros HTTP**, usa o **corpo padrão do Nest** ao lançar exceções HTTP (ex.: `{ "statusCode": 404, "message": "…", "error": "Not Found" }`). O **alvo** envelope abaixo aplica-se à evolução para API de produto uniformizada:
 
 ## Formato de resposta de sucesso (alvo)
 
@@ -60,12 +60,12 @@ A API de **fixtures** (`apps/api`) devolve **JSON direto** em sucesso (ex.: `{ "
 
 | Abordagem | Status |
 |-----------|--------|
-| **JWT Bearer** (`Authorization: Bearer <token>`) | **Recomendada** no MVP (ainda não na API de fixtures) |
+| **JWT Bearer** (`Authorization: Bearer <token>`) | **Implementada** em rotas protegidas (`/me`, posts do utilizador, etc.) |
 | OIDC / OAuth2 com provedor externo | Alternativa futura (ADR) |
 
 ## Paginação
 
-- **As-is:** `?cursor=` e `?limit=` nos list endpoints da API de fixtures — ver OpenAPI.  
+- **As-is:** `?cursor=` e `?limit=` nos list endpoints — ver OpenAPI.  
 - **Alvo:** um padrão único (`cursor` ou `page`/`page_size`) em todos os list endpoints; consolidar com ADR se necessário.
 
 ## Idempotência

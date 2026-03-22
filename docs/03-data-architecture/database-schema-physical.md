@@ -2,14 +2,14 @@
 
 ## Objetivo
 
-Documentar o **modelo relacional** aplicado na API (`apps/api`) via **Prisma**, espelhando o domínio dos fixtures [`gwan-social.fixtures.json`](../../apps/web/src/data/fixtures/gwan-social.fixtures.json) (`schemaVersion` 2). O diagrama conceitual de negócio continua em [domain-model.md](domain-model.md); este ficheiro descreve **tabelas e FKs** reais.
+Documentar o **modelo relacional** aplicado na API (`apps/api`) via **Prisma**. O ficheiro [`gwan-social.fixtures.json`](../../apps/web/src/data/fixtures/gwan-social.fixtures.json) (`schemaVersion` 2) continua a ser **fonte opcional do `prisma seed`**, alinhada ao domínio; **não** alimenta a API nem a SPA em runtime. O diagrama conceitual de negócio continua em [domain-model.md](domain-model.md); este ficheiro descreve **tabelas e FKs** reais.
 
 ## Ligação
 
 - Variável de ambiente **`DATABASE_URL`** (PostgreSQL), definida em `apps/api/.env` (não commitado). Ver [`apps/api/.env.example`](../../apps/api/.env.example).
 - Migrations versionadas em [`apps/api/prisma/migrations/`](../../apps/api/prisma/migrations/).
 - Schema Prisma: [`apps/api/prisma/schema.prisma`](../../apps/api/prisma/schema.prisma).
-- **Seeders (código):** [`apps/api/prisma/seeds/`](../../apps/api/prisma/seeds/) — módulos por tabela (`seedUsers`, `seedPosts`, …) e [`runAllSeeds.ts`](../../apps/api/prisma/seeds/runAllSeeds.ts); a entrada [`prisma/seed.ts`](../../apps/api/prisma/seed.ts) só orquestra. A fonte de dados é o mesmo **`gwan-social.fixtures.json`** que alimenta o mock da API (`FIXTURES_PATH` opcional). Após o fixture, [`seedDemoAuthorWithPosts.ts`](../../apps/api/prisma/seeds/seedDemoAuthorWithPosts.ts) cria um utilizador **só na base** com duas postagens e **amizades aceites** com `user_001`…`user_005` do fixture (login **`gwanseed_posts`** / **`DemoPosts123!`**, ver ficheiro para o UUID do perfil).
+- **Seeders (código):** [`apps/api/prisma/seeds/`](../../apps/api/prisma/seeds/) — módulos por tabela (`seedUsers`, `seedPosts`, …) e [`runAllSeeds.ts`](../../apps/api/prisma/seeds/runAllSeeds.ts); a entrada [`prisma/seed.ts`](../../apps/api/prisma/seed.ts) só orquestra. A fonte de dados por omissão é **`gwan-social.fixtures.json`** (`FIXTURES_PATH` opcional para outro caminho). *Melhoria futura:* migrar seeds para dados TS/SQL inline e tornar o JSON opcional. Após o seed principal, [`seedDemoAuthorWithPosts.ts`](../../apps/api/prisma/seeds/seedDemoAuthorWithPosts.ts) cria um utilizador **só na base** com duas postagens e **amizades aceites** com utilizadores seed (login **`gwanseed_posts`** / **`DemoPosts123!`**, ver ficheiro para o UUID do perfil).
 
 ## Comandos (na pasta `apps/api`)
 
@@ -20,7 +20,7 @@ Documentar o **modelo relacional** aplicado na API (`apps/api`) via **Prisma**, 
 | `npm run prisma:seed` | Executa [`prisma/seed.ts`](../../apps/api/prisma/seed.ts) → [`seeds/runAllSeeds.ts`](../../apps/api/prisma/seeds/runAllSeeds.ts) (idempotente; `FIXTURES_PATH` opcional). |
 | `npm run prisma:studio` | UI de inspeção dos dados. |
 
-A API Nest continua a servir leitura a partir dos **fixtures hidratados** até os casos de uso passarem a usar `PrismaService`; o seed povoa a base para desenvolvimento e testes futuros.
+A API Nest serve leitura e escrita via **PrismaService** sobre PostgreSQL; o seed povoa a base para desenvolvimento e testes.
 
 **Autenticação:** a migration `20260221120000_add_auth` acrescenta `users.email`, `users.password_hash` (nullable para contas só do seed) e a tabela `refresh_tokens` (refresh com revogação). Ver rotas em [`docs/07-standards/api-standards.md`](../07-standards/api-standards.md).
 
@@ -67,8 +67,7 @@ erDiagram
     text id PK
     text author_id FK
     text type
-    text title
-    text description
+    text content
     timestamp created_at
     text visibility
     text category

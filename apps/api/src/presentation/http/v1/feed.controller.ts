@@ -11,7 +11,8 @@ export class FeedController {
   @Get('feed')
   @ApiOperation({
     summary: 'Feed principal',
-    description: 'Lista paginada do read model (fixtures JSON), ordenação editorial alinhada à web.',
+    description:
+      'Lista paginada de posts em PostgreSQL (Prisma), mais recentes primeiro. Sem posts na base, a lista vem vazia.',
   })
   @ApiQuery({
     name: 'limit',
@@ -27,7 +28,7 @@ export class FeedController {
     example: 'eyJpIjoyMH0',
   })
   @ApiOkResponse({ description: 'Página de posts do feed.', type: PaginatedSocialPostDto })
-  feed(@Query('limit') limit?: string, @Query('cursor') cursor?: string) {
+  async feed(@Query('limit') limit?: string, @Query('cursor') cursor?: string) {
     return this.getFeed.execute({ limit, cursor })
   }
 }

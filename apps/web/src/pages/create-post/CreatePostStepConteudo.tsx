@@ -1,39 +1,25 @@
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useCreatePostDraft } from '@/contexts/CreatePostDraftContext'
-import { userCreatePostPath } from '@/lib/routes'
+import { createPostPath } from '@/lib/routes'
 
 export default function CreatePostStepConteudo() {
-  const { userId = '' } = useParams()
   const navigate = useNavigate()
   const { draft, patchDraft } = useCreatePostDraft()
 
-  const base = userCreatePostPath(userId)
+  const base = createPostPath()
 
   return (
     <div className="space-y-6">
       <div>
-        <label htmlFor="create-title" className="text-sm font-medium text-foreground">
-          Título
-        </label>
-        <input
-          id="create-title"
-          type="text"
-          value={draft.title}
-          onChange={(e) => patchDraft({ title: e.target.value })}
-          placeholder="Ex.: Café da manhã com a rede"
-          className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none ring-primary/20 focus:border-primary/40 focus:ring-2"
-        />
-      </div>
-      <div>
-        <label htmlFor="create-body" className="text-sm font-medium text-foreground">
-          Descrição
+        <label htmlFor="create-content" className="text-sm font-medium text-foreground">
+          O que queres partilhar?
         </label>
         <textarea
-          id="create-body"
-          value={draft.body}
-          onChange={(e) => patchDraft({ body: e.target.value })}
-          placeholder="O que queres partilhar?"
-          rows={6}
+          id="create-content"
+          value={draft.content}
+          onChange={(e) => patchDraft({ content: e.target.value })}
+          placeholder="Escreve o texto da tua postagem…"
+          rows={8}
           className="mt-2 w-full resize-y rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none ring-primary/20 focus:border-primary/40 focus:ring-2"
         />
       </div>

@@ -7,7 +7,6 @@ import type { Request, Response } from 'express'
 import { AppModule } from './app.module'
 import { parseCorsOrigins, parsePort, publicApiBase } from './config'
 import { httpLoggingMiddleware } from './presentation/http/http-logging.middleware'
-import { FixtureReadModelAdapter } from './infrastructure/fixtures/fixture-read-model.adapter'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
@@ -18,7 +17,12 @@ async function bootstrap() {
   const publicBase = publicApiBase(port, config.get<string>('PUBLIC_API_URL'))
   const corsOrigins = parseCorsOrigins(config.get<string>('CORS_ORIGINS'))
 
-  app.enableCors({ origin: corsOrigins, credentials: true })
+  app.enableCors({
+    origin: corsOrigins,
+    credentials: true,
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  })
   app.setGlobalPrefix('api/v1')
   app.useGlobalPipes(
     new ValidationPipe({
@@ -30,12 +34,12 @@ async function bootstrap() {
   )
 
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('Gwan Social API (fixtures)')
+    .setTitle('Gwan Social API')
     .setDescription(
       [
-        'API REST Gwan Social: rotas de leitura (feed, posts, utilizadores) servidas a partir do read model em **gwan-social.fixtures.json** (paginação por cursor base64url).',
-        '**Autenticação:** registo, login, refresh e logout persistem utilizadores e sessões em **PostgreSQL (Prisma)**; envia `Authorization: Bearer <accessToken>` em `GET /me` e `PATCH /me` (atualizar nome, utilizador e bio).',
-        'OpenAPI gerado a partir de DTOs Nest; experimenta os esquemas em "Try it out" ou importa `/api/openapi.json`.',
+        'API REST Gwan Social: **`GET /feed`** lista posts em **PostgreSQL** (mais recentes primeiro). Paginação por cursor base64url.',
+        '**Autenticação:** registo, login, refresh e logout em **PostgreSQL (Prisma)**; envia `Authorization: Bearer <accessToken>` em `GET /me`, `PATCH /me`, `POST /me/avatar`, `POST /me/posts` e `DELETE /posts/:postId` (apenas autor).',
+        'OpenAPI em `/api/openapi.json`.',
       ].join('\n\n'),
     )
     .setVersion('0.1.0')
@@ -51,15 +55,13 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig)
 
   const expressApp = app.getHttpAdapter().getInstance()
-  const fixtures = app.get(FixtureReadModelAdapter)
 
-  /** Antes do UI em `/api/*` para não ser interceptado pelo static do Swagger. */
   expressApp.get('/api/openapi.json', (_req: Request, res: Response) => {
     res.json(document)
   })
 
   SwaggerModule.setup('api/', app, document, {
-    customSiteTitle: 'Gwan Social API (fixtures)',
+    customSiteTitle: 'Gwan Social API',
     customCss: '.swagger-ui .topbar { display: none }',
     useGlobalPrefix: false,
   })
@@ -70,11 +72,9 @@ async function bootstrap() {
       swaggerUi: `${publicBase}/api/`,
       openApiJson: `${publicBase}/api/openapi.json`,
       health: `${publicBase}/api/v1/health`,
-      fixturesPath: fixtures.getFixturesFilePath(),
     })
   })
 
-  /** Sem barra final, o browser resolve mal os assets relativos do Swagger UI. */
   expressApp.get('/api', (req: Request, res: Response) => {
     const q = req.url.indexOf('?')
     if (q === -1) {
@@ -84,14 +84,9 @@ async function bootstrap() {
     res.redirect(302, `/api/?${req.url.slice(q + 1)}`)
   })
 
-  process.on('SIGUSR2', () => {
-    fixtures.resetCache()
-  })
-
   await app.listen(port)
   console.info(`[api] http://localhost:${port}`)
   console.info(`[api] swagger: http://localhost:${port}/api/`)
-  console.info(`[api] fixtures: ${fixtures.getFixturesFilePath()}`)
 }
 
 bootstrap().catch((err: unknown) => {

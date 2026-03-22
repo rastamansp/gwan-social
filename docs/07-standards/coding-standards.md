@@ -6,7 +6,7 @@ Convenções **mínimas** para NestJS, Python, React e React Native no monorepo 
 
 ## NestJS (`apps/api`)
 
-- **As-is:** módulos globais `ApplicationModule`, `InfrastructureModule`, `ApiV1Module`; casos de uso em `application/use-cases/`; porto `FixtureReadModelPort` + adaptador em `infrastructure/fixtures/`; controladores em `presentation/http/v1/`.  
+- **As-is:** módulos globais `ApplicationModule`, `InfrastructureModule`, `ApiV1Module`; casos de uso em `application/use-cases/`; `PrismaService` e serviços de infra em `infrastructure/prisma/` (e storage quando aplicável); controladores em `presentation/http/v1/`.  
 - **Alvo (por capacidade):** módulos por domínio (`identity`, `profile`, `interaction`, `rating`, `reputation`) com camadas por feature:  
   - `domain/` — entidades, value objects, interfaces de repositório  
   - `application/` — casos de uso (classes `*UseCase` ou `*Service` de aplicação)  

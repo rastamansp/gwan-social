@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { MapPin } from 'lucide-react'
 import { Navigate, useLocation } from 'react-router-dom'
+import { ApiRequiredMessage } from '@/components/common/ApiRequiredMessage'
 import { PostCard } from '@/components/social/PostCard'
 import { useAuth } from '@/contexts/AuthContext'
-import { getNearbyPosts } from '@/data/mockUsers'
 import { socialPostToLegacyPost } from '@/data/socialPosts.adapters'
 import type { Post } from '@/data/legacyFeed.types'
 import { isApiEnabled } from '@/lib/api/config'
@@ -23,8 +23,6 @@ export default function NearbyPage() {
   const { isAuthenticated } = useAuth()
   const { pathname, search } = useLocation()
   const useApi = isApiEnabled()
-
-  const mockEntries = getNearbyPosts()
 
   const [apiEntries, setApiEntries] = useState<{ post: Post; distanceKm: number }[]>([])
   const [apiLoading, setApiLoading] = useState(false)
@@ -67,10 +65,16 @@ export default function NearbyPage() {
     return <Navigate to={`${loginPath()}?from=${from}`} replace />
   }
 
-  const entries = useApi ? apiEntries : mockEntries
-  const subtitle = useApi
-    ? 'Postagens próximas a partir da API (ordem e distâncias do fixture).'
-    : 'Postagens de pessoas na tua área (demonstração — dados mock).'
+  if (!useApi) {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col bg-background">
+        <ApiRequiredMessage title="Próximo" />
+      </div>
+    )
+  }
+
+  const subtitle =
+    'Postagens ordenadas pela API (distância é placeholder até existir geolocalização real na base de dados).'
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-background">
@@ -85,15 +89,19 @@ export default function NearbyPage() {
           </div>
         </header>
 
-        {useApi && apiLoading ? (
+        {apiLoading ? (
           <p className="text-center text-sm text-muted-foreground">A carregar…</p>
         ) : null}
-        {useApi && apiError && entries.length === 0 ? (
+        {apiError && apiEntries.length === 0 ? (
           <p className="text-center text-sm text-destructive">{apiError}</p>
         ) : null}
 
+        {!apiLoading && apiEntries.length === 0 && !apiError ? (
+          <p className="text-center text-sm text-muted-foreground">Ainda não há posts próximos na API.</p>
+        ) : null}
+
         <div className="space-y-4">
-          {entries.map(({ post, distanceKm }, i) => (
+          {apiEntries.map(({ post, distanceKm }, i) => (
             <div key={post.id} className="relative">
               <div className="absolute right-3 top-3 z-10 flex items-center gap-1 rounded-full border border-border/50 bg-card/90 px-2.5 py-1 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur-sm">
                 <MapPin size={12} className="text-primary" aria-hidden />

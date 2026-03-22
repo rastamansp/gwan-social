@@ -1,7 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common'
-import { getFriendUserIdsFor } from '../../infrastructure/fixtures/hydrateFixtures'
-import type { FixtureReadModelPort } from '../ports/fixture-read-model.port'
-import { FIXTURE_READ_MODEL_PORT } from '../ports/fixture-read-model.token'
+import { Injectable } from '@nestjs/common'
 import { clampLimit, paginateByIndex, type PaginatedResult } from '../shared/pagination'
 import { PrismaService } from '../../infrastructure/prisma/prisma.service'
 
@@ -13,19 +10,10 @@ export interface ListUserFriendsInput {
 
 @Injectable()
 export class ListUserFriendsUseCase {
-  constructor(
-    @Inject(FIXTURE_READ_MODEL_PORT) private readonly fixtures: FixtureReadModelPort,
-    private readonly prisma: PrismaService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async execute(input: ListUserFriendsInput): Promise<PaginatedResult<string> | null> {
-    const h = this.fixtures.getHydrated()
     const lim = clampLimit(input.limit, 50, 100)
-
-    if (h.domain.users.some((u) => u.id === input.userId)) {
-      const ids = getFriendUserIdsFor(h.domain, input.userId)
-      return paginateByIndex(ids, input.cursor, lim)
-    }
 
     const exists = await this.prisma.user.findUnique({
       where: { id: input.userId },

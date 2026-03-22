@@ -11,7 +11,9 @@ export type AuthTokens = {
 export function getAccessToken(): string | null {
   if (typeof window === 'undefined') return null
   try {
-    return localStorage.getItem(ACCESS_KEY)
+    const raw = localStorage.getItem(ACCESS_KEY)
+    const t = raw?.trim()
+    return t && t.length > 0 ? t : null
   } catch {
     return null
   }

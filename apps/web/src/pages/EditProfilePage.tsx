@@ -5,11 +5,11 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useSessionUser } from '@/contexts/SessionUserContext'
 import { ApiHttpError } from '@/lib/api/client'
 import { isApiEnabled } from '@/lib/api/config'
-import { fetchPatchMe } from '@/lib/api/endpoints'
-import { loginPath, userProfilePath } from '@/lib/routes'
+import { fetchPatchMe, fetchPostMeAvatar } from '@/lib/api/endpoints'
+import { loginPath, myProfilePath, userProfilePath } from '@/lib/routes'
 import { cn } from '@/lib/utils'
 
-const MAX_AVATAR_FILE_BYTES = 900 * 1024
+const MAX_AVATAR_FILE_BYTES = 2 * 1024 * 1024
 
 function normalizeHandle(raw: string) {
   const t = raw.trim()
@@ -29,35 +29,46 @@ export default function EditProfilePage() {
   const { pathname, search } = useLocation()
   const formId = useId()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const avatarObjectUrlRef = useRef<string | null>(null)
 
   const [name, setName] = useState(profile.name)
   const [handle, setHandle] = useState(profile.handle)
+  const [email, setEmail] = useState(profile.email ?? '')
+  const [headline, setHeadline] = useState(profile.headline)
   const [bio, setBio] = useState(profile.bio)
   const [avatarPreview, setAvatarPreview] = useState(profile.avatar)
   const [pendingAvatarDataUrl, setPendingAvatarDataUrl] = useState<string | null>(null)
+  const [pendingAvatarFile, setPendingAvatarFile] = useState<File | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
   const [loadingFile, setLoadingFile] = useState(false)
   const [saving, setSaving] = useState(false)
 
   const apiMode = isApiEnabled()
-  const photoDisabled = apiMode
+
+  useEffect(() => {
+    return () => {
+      if (avatarObjectUrlRef.current) {
+        URL.revokeObjectURL(avatarObjectUrlRef.current)
+        avatarObjectUrlRef.current = null
+      }
+    }
+  }, [])
 
   useEffect(() => {
     setName(profile.name)
     setHandle(profile.handle)
+    setEmail(profile.email ?? '')
+    setHeadline(profile.headline ?? '')
     setBio(profile.bio ?? '')
     setAvatarPreview(profile.avatar)
-  }, [profile.id, profile.name, profile.handle, profile.bio, profile.avatar])
-
-  if (!isAuthenticated) {
-    const from = encodeURIComponent(`${pathname}${search}`)
-    return <Navigate to={`${loginPath()}?from=${from}`} replace />
-  }
-
-  if (userId !== sessionId) {
-    return <Navigate to={userId ? userProfilePath(userId) : '/'} replace />
-  }
+    setPendingAvatarFile(null)
+    setPendingAvatarDataUrl(null)
+    if (avatarObjectUrlRef.current) {
+      URL.revokeObjectURL(avatarObjectUrlRef.current)
+      avatarObjectUrlRef.current = null
+    }
+  }, [profile.id, profile.name, profile.handle, profile.email, profile.headline, profile.bio, profile.avatar])
 
   const onPickPhoto = useCallback(() => {
     fileInputRef.current?.click()
@@ -70,11 +81,33 @@ export default function EditProfilePage() {
       setError('Escolhe um ficheiro de imagem válido.')
       return
     }
+    if (
+      apiMode &&
+      file.type !== 'image/jpeg' &&
+      file.type !== 'image/png' &&
+      file.type !== 'image/webp'
+    ) {
+      setError('Com a API ativa, usa JPEG, PNG ou WebP.')
+      return
+    }
     if (file.size > MAX_AVATAR_FILE_BYTES) {
-      setError(`A imagem deve ter no máximo ${Math.round(MAX_AVATAR_FILE_BYTES / 1024)} KB (para caber no armazenamento local).`)
+      setError(
+        `A imagem deve ter no máximo ${Math.round(MAX_AVATAR_FILE_BYTES / 1024 / 1024)} MB (limite da API).`,
+      )
       return
     }
     setError(null)
+    if (apiMode) {
+      setPendingAvatarFile(file)
+      setPendingAvatarDataUrl(null)
+      if (avatarObjectUrlRef.current) {
+        URL.revokeObjectURL(avatarObjectUrlRef.current)
+      }
+      const url = URL.createObjectURL(file)
+      avatarObjectUrlRef.current = url
+      setAvatarPreview(url)
+      return
+    }
     setLoadingFile(true)
     const reader = new FileReader()
     reader.onload = () => {
@@ -93,7 +126,16 @@ export default function EditProfilePage() {
       setError('Erro ao ler o ficheiro.')
     }
     reader.readAsDataURL(file)
-  }, [])
+  }, [apiMode])
+
+  if (!isAuthenticated) {
+    const from = encodeURIComponent(`${pathname}${search}`)
+    return <Navigate to={`${loginPath()}?from=${from}`} replace />
+  }
+
+  if (userId !== sessionId) {
+    return <Navigate to={userId ? userProfilePath(userId) : '/'} replace />
+  }
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -121,11 +163,23 @@ export default function EditProfilePage() {
     if (apiMode) {
       setSaving(true)
       try {
-        await fetchPatchMe({
+        if (pendingAvatarFile) {
+          await fetchPostMeAvatar(pendingAvatarFile)
+        }
+        const me = await fetchPatchMe({
           displayName: n,
           username,
+          headline: headline.trim(),
           bio: bio.trim(),
+          email: emailTrim,
         })
+        if (avatarObjectUrlRef.current) {
+          URL.revokeObjectURL(avatarObjectUrlRef.current)
+          avatarObjectUrlRef.current = null
+        }
+        setPendingAvatarFile(null)
+        setAvatarPreview(me.avatarUrl || profile.avatar)
+        setEmail(me.email?.trim() ?? '')
         clearProfileOverrides()
         window.dispatchEvent(
           new CustomEvent<{ username: string }>('gwan-profile-updated', { detail: { username } }),
@@ -145,6 +199,8 @@ export default function EditProfilePage() {
     updateProfile({
       name: n,
       handle: h,
+      email: emailTrim,
+      headline: headline.trim(),
       bio: bio.trim(),
       ...(pendingAvatarDataUrl ? { avatar: pendingAvatarDataUrl } : {}),
     })
@@ -156,7 +212,7 @@ export default function EditProfilePage() {
   return (
     <div className="mx-auto max-w-lg px-4 py-8 md:py-10">
       <Link
-        to={userProfilePath(sessionId)}
+        to={myProfilePath()}
         className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
         ← Voltar ao perfil
@@ -169,7 +225,7 @@ export default function EditProfilePage() {
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           {apiMode
-            ? 'Os dados abaixo são guardados na API (PostgreSQL) com o teu token de sessão. A foto de perfil por ficheiro ainda não está ligada ao servidor.'
+            ? 'Os dados e a foto de perfil são guardados na API: texto em PostgreSQL e imagem no armazenamento MinIO (S3).'
             : 'Alterações guardadas neste dispositivo (demonstração — sem API). Quando existir backend, este formulário passará a sincronizar com o servidor.'}
         </p>
       </header>
@@ -181,46 +237,54 @@ export default function EditProfilePage() {
       >
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
           <div className="relative shrink-0">
-            <img
-              src={avatarPreview}
-              alt=""
-              className="h-28 w-28 rounded-full object-cover ring-2 ring-primary/30"
-            />
+            {/* Clicar na foto abre o seletor (comportamento esperado no mobile/desktop). */}
             <button
               type="button"
               onClick={onPickPhoto}
-              disabled={loadingFile || photoDisabled}
-              className="absolute -bottom-1 -right-1 flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md transition hover:opacity-90 active:scale-95 disabled:opacity-60"
-              aria-label="Alterar foto de perfil"
+              disabled={loadingFile}
+              className="group relative flex h-28 w-28 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full ring-2 ring-primary/30 transition hover:ring-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              aria-label="Alterar foto de perfil — escolher imagem do dispositivo"
             >
-              {loadingFile ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+              <img
+                src={avatarPreview}
+                alt=""
+                className="h-full w-full object-cover"
+                draggable={false}
+              />
+              <span
+                className="absolute inset-0 flex items-center justify-center rounded-full bg-black/0 transition group-hover:bg-black/25 group-focus-visible:bg-black/25"
+                aria-hidden
+              />
+              <span className="pointer-events-none absolute -bottom-1 -right-1 flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md ring-2 ring-card">
+                {loadingFile ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Camera className="h-4 w-4" />
+                )}
+              </span>
             </button>
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp,image/*"
               className="sr-only"
-              disabled={photoDisabled}
+              disabled={loadingFile}
               onChange={onFileChange}
             />
           </div>
           <div className="min-w-0 flex-1 text-center sm:text-left">
             <p className="text-sm font-medium text-foreground">Foto de perfil</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              {photoDisabled
-                ? 'Com a API ativa, o upload de imagem ainda não está disponível.'
-                : `JPG, PNG ou WebP · máx. ${Math.round(MAX_AVATAR_FILE_BYTES / 1024)} KB`}
+              JPG, PNG ou WebP · máx. {Math.round(MAX_AVATAR_FILE_BYTES / 1024 / 1024)} MB
             </p>
-            {!photoDisabled ? (
-              <button
-                type="button"
-                onClick={onPickPhoto}
-                disabled={loadingFile}
-                className="mt-3 text-sm font-medium text-primary underline-offset-2 hover:underline disabled:opacity-50"
-              >
-                Escolher imagem
-              </button>
-            ) : null}
+            <button
+              type="button"
+              onClick={onPickPhoto}
+              disabled={loadingFile}
+              className="mt-3 text-sm font-medium text-primary underline-offset-2 hover:underline disabled:opacity-50"
+            >
+              Escolher imagem
+            </button>
           </div>
         </div>
 
@@ -249,6 +313,43 @@ export default function EditProfilePage() {
               placeholder="@utilizador"
               className="mt-1.5 w-full rounded-xl border border-border/80 bg-background px-4 py-2.5 text-sm outline-none ring-primary/20 focus:border-primary/40 focus:ring-2"
             />
+          </div>
+          <div>
+            <label htmlFor={`${formId}-email`} className="text-xs font-medium text-muted-foreground">
+              Email
+            </label>
+            <input
+              id={`${formId}-email`}
+              type="email"
+              value={email}
+              onChange={(ev) => setEmail(ev.target.value)}
+              autoComplete="email"
+              placeholder="ex.: nome@exemplo.com"
+              className="mt-1.5 w-full rounded-xl border border-border/80 bg-background px-4 py-2.5 text-sm outline-none ring-primary/20 focus:border-primary/40 focus:ring-2"
+            />
+            {apiMode ? (
+              <p className="mt-1 text-xs text-muted-foreground">
+                Opcional ao criar conta; podes alterar ou limpar aqui (único na base de dados).
+              </p>
+            ) : (
+              <p className="mt-1 text-xs text-muted-foreground">Guardado localmente com o resto do perfil.</p>
+            )}
+          </div>
+          <div>
+            <label htmlFor={`${formId}-headline`} className="text-xs font-medium text-muted-foreground">
+              Headline
+            </label>
+            <input
+              id={`${formId}-headline`}
+              value={headline}
+              onChange={(ev) => setHeadline(ev.target.value)}
+              maxLength={apiMode ? 280 : undefined}
+              placeholder="Uma linha curta sobre ti"
+              className="mt-1.5 w-full rounded-xl border border-border/80 bg-background px-4 py-2.5 text-sm outline-none ring-primary/20 focus:border-primary/40 focus:ring-2"
+            />
+            {apiMode ? (
+              <p className="mt-1 text-xs text-muted-foreground">Máximo 280 caracteres (campo headline na API).</p>
+            ) : null}
           </div>
           <div>
             <label htmlFor={`${formId}-bio`} className="text-xs font-medium text-muted-foreground">
@@ -298,7 +399,7 @@ export default function EditProfilePage() {
             Guardar alterações
           </button>
           <Link
-            to={userProfilePath(sessionId)}
+            to={myProfilePath()}
             className="inline-flex items-center justify-center rounded-full border border-border px-5 py-2.5 text-sm font-medium text-foreground transition hover:bg-muted/50"
           >
             Cancelar

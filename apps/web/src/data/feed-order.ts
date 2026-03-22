@@ -1,6 +1,5 @@
-import type { SocialPost } from '../../types/socialPost.types'
+import type { SocialPost } from '@/data/socialPost.types'
 
-/** Igual a `orderPostsForFeed` em `apps/web/src/data/socialPosts.collection.ts`. */
 export function orderPostsForFeed(list: SocialPost[]): SocialPost[] {
   return [...list].sort((a, b) => {
     if (a.type === 'featured_moment' && b.type !== 'featured_moment') return -1

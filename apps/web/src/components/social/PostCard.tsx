@@ -2,7 +2,7 @@ import { useState, type MouseEvent } from 'react'
 import { Heart, MessageCircle, Star } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useSessionUser } from '@/contexts/SessionUserContext'
-import type { Post } from '@/data/mockUsers'
+import type { Post } from '@/data/legacyFeed.types'
 import { StarRating } from '@/components/social/StarRating'
 import { cn } from '@/lib/utils'
 

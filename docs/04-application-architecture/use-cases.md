@@ -9,9 +9,9 @@ Listar casos de uso com **ID estável** para rastreabilidade na aplicação **Gw
 - `UC-<DOMÍNIO>-NN` — ex.: `UC-RAT-01`  
 - Estados: **Planejado** | **MVP** | **Em evolução** | **Depreciado**
 
-## API de demonstração (`apps/api`)
+## API (`apps/api`)
 
-**NestJS** expõe leitura do mesmo **read model** que a web obtém a partir de `gwan-social.fixtures.json` (sem PostgreSQL, sem JWT, sem escrita). Prefixo REST: **`/api/v1`**. OpenAPI: **`/api/openapi.json`**; Swagger UI: **`/api/`**. Ver [api-standards.md](../07-standards/api-standards.md).
+**NestJS** com **PostgreSQL (Prisma)** para leitura e escrita dos recursos abaixo. Prefixo REST: **`/api/v1`**. OpenAPI: **`/api/openapi.json`**; Swagger UI: **`/api/`**. Ver [api-standards.md](../07-standards/api-standards.md).
 
 | Método | Caminho (após `/api/v1`) | Notas |
 |--------|---------------------------|--------|
@@ -19,14 +19,14 @@ Listar casos de uso com **ID estável** para rastreabilidade na aplicação **Gw
 | GET | `feed` | Feed principal; `limit`, `cursor` |
 | GET | `posts/nearby` | Posts próximos (demo); `limit`, `cursor` |
 | GET | `posts/:postId` | Detalhe de post; 404 se inexistente |
-| GET | `me` | Utilizador atual (JWT Bearer ou fallback fixture em dev) |
+| GET | `me` | Utilizador atual (**JWT Bearer** obrigatório; `401` sem token) |
 | PATCH | `me` | Atualizar perfil próprio (`displayName`, `username`, `bio`); Bearer obrigatório — **UC-PROF-02** (sem upload de ficheiros) |
 | GET | `users/:userId` | Perfil público; 404 se inexistente |
 | GET | `users/:userId/posts` | Posts do autor; paginação |
 | GET | `users/:userId/ratings/received` | Avaliações recebidas; paginação |
 | GET | `users/:userId/friends` | IDs de amigos; paginação |
 
-**Rastreabilidade com UCs:** leitura de perfil/listas aproxima **UC-PROF-01** e **UC-RAT-02** como contrato de leitura. **UC-PROF-02** é coberto em parte por **`PATCH /me`** (texto; sem média). **UC-AUTH-01** / **UC-AUTH-02** vivem em **`/auth/*`** com PostgreSQL. Escritas como **UC-INT-01**, **UC-RAT-01**, etc. **não** estão nesta API.
+**Rastreabilidade com UCs:** leitura de perfil/listas aproxima **UC-PROF-01** e **UC-RAT-02** como contrato de leitura. **UC-PROF-02** é coberto em parte por **`PATCH /me`** (texto; avatar em **`POST /me/avatar`**). **UC-AUTH-01** / **UC-AUTH-02** vivem em **`/auth/*`** com PostgreSQL. Criação de posts pelo autor: **`POST /me/posts`**. Remoção: **`DELETE /posts/:postId`** (autor).
 
 ## Autenticação e identidade
 

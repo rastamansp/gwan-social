@@ -53,8 +53,7 @@ model Post {
   authorId       String   @map("author_id")
   author         User     @relation("PostAuthor", fields: [authorId], references: [id], onDelete: Restrict)
   type           String
-  title          String
-  description    String
+  content        String
   createdAt      DateTime @map("created_at")
   visibility     String
   category       String
@@ -109,6 +108,8 @@ model Rating {
   contextType   String   @map("context_type")
   interactionId String?  @map("interaction_id")
 
+  @@index([reviewerId, createdAt(sort: Desc)])
+  @@index([revieweeId])
   @@map("ratings")
 }
 

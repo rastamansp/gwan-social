@@ -1,12 +1,14 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { TrendingDown, TrendingUp, Trophy } from 'lucide-react'
+import { ApiRequiredMessage } from '@/components/common/ApiRequiredMessage'
 import { useSessionUser } from '@/contexts/SessionUserContext'
-import type { UserProfile } from '@/data/mockUsers'
-import { getTierColor, getTierLabel, users } from '@/data/mockUsers'
+import type { UserProfile } from '@/data/legacyFeed.types'
+import { useAuthorProfilesFromFeed } from '@/hooks/useAuthorProfilesFromFeed'
 import type { RankingMode } from '@/lib/ranking-modes'
 import { StarRating } from '@/components/social/StarRating'
 import { cn } from '@/lib/utils'
+import { getTierColor, getTierLabel } from '@/data/user-profile-ui'
 
 function tierOrder(tier: UserProfile['tier']): number {
   switch (tier) {
@@ -55,10 +57,40 @@ interface LeaderboardProps {
 
 export function Leaderboard({ mode }: LeaderboardProps) {
   const { resolveUser } = useSessionUser()
+  const { profiles, status, useApi, errorMessage } = useAuthorProfilesFromFeed(50)
+
   const sorted = useMemo(
-    () => sortUsersForMode(mode, users.map((u) => resolveUser(u.id) ?? u)),
-    [mode, resolveUser],
+    () => sortUsersForMode(mode, profiles.map((p) => resolveUser(p.id) ?? p)),
+    [mode, profiles, resolveUser],
   )
+
+  if (!useApi) {
+    return <ApiRequiredMessage title="Ranking" />
+  }
+
+  if (status === 'loading' && sorted.length === 0) {
+    return (
+      <p className="rounded-2xl border border-border/50 bg-card px-5 py-8 text-center text-sm text-muted-foreground">
+        A carregar autores do feed…
+      </p>
+    )
+  }
+
+  if (status === 'err') {
+    return (
+      <p className="rounded-2xl border border-border/50 bg-card px-5 py-8 text-center text-sm text-destructive">
+        {errorMessage ?? 'Não foi possível carregar dados para o ranking.'}
+      </p>
+    )
+  }
+
+  if (sorted.length === 0) {
+    return (
+      <p className="rounded-2xl border border-border/50 bg-card px-5 py-8 text-center text-sm text-muted-foreground">
+        Ainda não há autores no feed para mostrar no ranking. Publica ou segue conteúdo na API.
+      </p>
+    )
+  }
 
   return (
     <div className="overflow-hidden rounded-2xl border border-border/50 bg-card shadow-sm">

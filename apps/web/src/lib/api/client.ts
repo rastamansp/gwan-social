@@ -35,6 +35,7 @@ function parseErrorMessage(status: number, text: string): string {
 function statusTextFallback(status: number): string {
   if (status === 401) return 'Não autorizado'
   if (status === 422) return 'Dados inválidos'
+  if (status === 503) return 'Serviço indisponível'
   return `Erro HTTP ${status}`
 }
 
@@ -97,6 +98,91 @@ export async function apiGet<T>(
       throw new ApiHttpError(res.status, parseErrorMessage(res.status, text))
     }
     return (await res.json()) as T
+  } catch (err) {
+    return wrapFetchError(err)
+  } finally {
+    if (timeout) window.clearTimeout(timeout)
+  }
+}
+
+export async function apiDelete(
+  path: string,
+  options?: {
+    timeoutMs?: number
+    skipAuth?: boolean
+  },
+): Promise<void> {
+  const base = getApiBaseUrl()
+  if (!base) {
+    throw new Error('VITE_API_URL não definida')
+  }
+
+  const url = joinBaseAndPath(base, path)
+  const ctrl = new AbortController()
+  const timeoutMs = options?.timeoutMs ?? DEFAULT_TIMEOUT_MS
+  const timeout =
+    timeoutMs > 0
+      ? window.setTimeout(() => ctrl.abort(), timeoutMs)
+      : 0
+
+  try {
+    const res = await fetch(url, {
+      method: 'DELETE',
+      credentials: 'include',
+      signal: ctrl.signal,
+      headers: {
+        ...authHeaders(options?.skipAuth),
+      },
+    })
+    if (res.status === 204) {
+      return
+    }
+    const text = await res.text()
+    if (!res.ok) {
+      throw new ApiHttpError(res.status, parseErrorMessage(res.status, text))
+    }
+  } catch (err) {
+    return wrapFetchError(err)
+  } finally {
+    if (timeout) window.clearTimeout(timeout)
+  }
+}
+
+/** DELETE com resposta JSON (ex.: post atualizado após apagar comentário). */
+export async function apiDeleteJson<T>(
+  path: string,
+  options?: {
+    timeoutMs?: number
+    skipAuth?: boolean
+  },
+): Promise<T> {
+  const base = getApiBaseUrl()
+  if (!base) {
+    throw new Error('VITE_API_URL não definida')
+  }
+
+  const url = joinBaseAndPath(base, path)
+  const ctrl = new AbortController()
+  const timeoutMs = options?.timeoutMs ?? DEFAULT_TIMEOUT_MS
+  const timeout =
+    timeoutMs > 0
+      ? window.setTimeout(() => ctrl.abort(), timeoutMs)
+      : 0
+
+  try {
+    const res = await fetch(url, {
+      method: 'DELETE',
+      credentials: 'include',
+      signal: ctrl.signal,
+      headers: {
+        ...authHeaders(options?.skipAuth),
+      },
+    })
+    const text = await res.text()
+    if (!res.ok) {
+      throw new ApiHttpError(res.status, parseErrorMessage(res.status, text))
+    }
+    return text ? (JSON.parse(text) as T) : ({} as T)
   } catch (err) {
     return wrapFetchError(err)
   } finally {
@@ -185,6 +271,56 @@ export async function apiPost<T>(
         ...authHeaders(options?.skipAuth),
       },
       body: JSON.stringify(body),
+    })
+    if (res.status === 204) {
+      return undefined as T
+    }
+    const text = await res.text()
+    if (!res.ok) {
+      throw new ApiHttpError(res.status, parseErrorMessage(res.status, text))
+    }
+    if (!text) {
+      return undefined as T
+    }
+    return JSON.parse(text) as T
+  } catch (err) {
+    return wrapFetchError(err)
+  } finally {
+    if (timeout) window.clearTimeout(timeout)
+  }
+}
+
+/** POST multipart (ex.: upload de avatar). Não definir Content-Type — o browser define o boundary. */
+export async function apiPostMultipart<T>(
+  path: string,
+  formData: FormData,
+  options?: {
+    timeoutMs?: number
+    skipAuth?: boolean
+  },
+): Promise<T> {
+  const base = getApiBaseUrl()
+  if (!base) {
+    throw new Error('VITE_API_URL não definida')
+  }
+
+  const url = joinBaseAndPath(base, path)
+  const ctrl = new AbortController()
+  const timeoutMs = options?.timeoutMs ?? DEFAULT_TIMEOUT_MS
+  const timeout =
+    timeoutMs > 0
+      ? window.setTimeout(() => ctrl.abort(), timeoutMs)
+      : 0
+
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      credentials: 'include',
+      signal: ctrl.signal,
+      headers: {
+        ...authHeaders(options?.skipAuth),
+      },
+      body: formData,
     })
     if (res.status === 204) {
       return undefined as T

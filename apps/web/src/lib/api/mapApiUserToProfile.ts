@@ -7,15 +7,16 @@ export interface ApiPublicUserDto {
   username: string
   displayName: string
   avatarUrl: string
-  headline: string
+  headline?: string | null
   bio: string | null
   socialScore: number
   reputationByContext: Record<string, number>
 }
 
-/** DTO de `GET /me` (inclui handle). */
+/** DTO de `GET /me` (inclui handle e email). */
 export interface ApiMeUserDto extends ApiPublicUserDto {
   handle: string
+  email?: string | null
 }
 
 function ratingCountFromScore(score: number): number {
@@ -31,7 +32,8 @@ export function mapApiPublicUserToProfile(dto: ApiPublicUserDto): UserProfile {
     avatar: dto.avatarUrl,
     rating,
     ratingCount: ratingCountFromScore(rating),
-    bio: dto.bio?.trim() ? dto.bio : dto.headline,
+    headline: (dto.headline ?? '').trim(),
+    bio: (dto.bio ?? '').trim(),
     tier: scoreToTier(rating),
   }
 }
@@ -42,6 +44,6 @@ export function mapApiMeUserToProfile(dto: ApiMeUserDto): UserProfile {
     ...base,
     handle: dto.handle.startsWith('@') ? dto.handle : `@${dto.handle.replace(/^@+/, '')}`,
     name: dto.displayName,
-    bio: dto.bio?.trim() ? dto.bio : dto.headline,
+    email: dto.email?.trim() ?? '',
   }
 }

@@ -7,3 +7,6 @@ dist
 .DS_Store
 coverage
 *.log
+
+# Ficheiros temporários para curl --data-binary (credenciais / testes locais)
+apps/api/.curl-tmp-*.json

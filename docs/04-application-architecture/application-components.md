@@ -8,11 +8,11 @@ Descrever **aplicações**, **pacotes compartilhados** e **bounded contexts lóg
 
 | | Estado atual (as-is) | Alvo |
 |--|----------------------|------|
-| **`apps/web`** | Implementada: UI social com **mocks**, auth em **`localStorage`**, sem consumo HTTP da API nos fluxos principais | Consome **`/api/v1`**; sem lógica de negócio duplicada para reputação |
-| **`apps/api`** | **Presente:** NestJS, read model a partir de **fixtures JSON** (sem DB, Redis, JWT) | Autenticação, persistência transacional, publicação em fila — fases M1–M5 |
+| **`apps/web`** | Implementada: UI social com **`VITE_API_URL`** obrigatória para dados sociais; JWT em **`localStorage`** | Worker, filas, mobile — fases M1–M5 |
+| **`apps/api`** | **Presente:** NestJS, **PostgreSQL (Prisma)**, JWT, rotas REST **`/api/v1`** | Redis, publicação em fila, worker — fases M1–M5 |
 | **`apps/worker-python`**, **`apps/mobile`** | Não existem no repositório | Conforme fases M1–M5 |
 | **`packages/shared-types`**, **`packages/shared-utils`** | Opcional / vazio | Contratos e utilitários partilhados |
-| **Integração** | API serve apenas leitura fixture; sem fila nem bases de dados na app | API ↔ Redis ↔ worker ↔ PostgreSQL |
+| **Integração** | SPA ↔ API HTTP + PostgreSQL; sem fila nem worker no repo | API ↔ Redis ↔ worker ↔ PostgreSQL |
 
 ## Módulos de produto vs entrega (referência)
 
@@ -32,7 +32,7 @@ Descrever **aplicações**, **pacotes compartilhados** e **bounded contexts lóg
 
 | Componente | Tecnologia | Responsabilidade principal |
 |------------|------------|----------------------------|
-| `apps/api` | NestJS | **Hoje:** HTTP **read-only** sobre fixtures (demonstração / contrato antecipado). **Alvo:** autenticação, casos de uso, persistência transacional, publicação em fila |
+| `apps/api` | NestJS | **Hoje:** HTTP sobre **PostgreSQL** (feed, perfis, auth, posts). **Alvo:** filas, worker, regras de reputação assíncronas |
 | `apps/worker-python` | FastAPI + workers | Consumo de fila, cálculo de reputação, antifraude/ranking/moderação assíncrona |
 | `apps/web` | React | UI web administrativa/social |
 | `apps/mobile` | React Native | App mobile consumindo mesma API |

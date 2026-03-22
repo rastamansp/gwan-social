@@ -17,7 +17,7 @@ Lista **priorizada** de épicos e histórias para **Gwan Social Reputation**, co
 | E8 | Administração (painel mínimo) | P1 | UC-ADM-01 |
 | E7 | Moderação | P2 (pós-MVP) | UC-MOD-01 |
 
-**Estado atual:** o **E6 (web)** tem já um **protótipo rico** em `apps/web` (mocks, sem consumo HTTP de **`/api/v1`**); existe **`apps/api`** (fixtures) para contrato e integração antecipada. As histórias **H8/H9** mantêm-se válidas para a fase em que clientes consumirem a API. O **mobile** ainda não existe no repositório.
+**Estado atual:** o **E6 (web)** consome **`/api/v1`** com **`VITE_API_URL`** (feed, perfil, post, próximo, ranking/pessoas a partir do feed). **`apps/api`** persiste em **PostgreSQL** (Prisma). O **mobile** ainda não existe no repositório.
 
 ## Histórias (amostra — detalhar na ferramenta de gestão)
 

@@ -14,11 +14,13 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useMatch, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { useSessionUser } from '@/contexts/SessionUserContext'
-import { posts } from '@/data/mockUsers'
+import { isApiEnabled } from '@/lib/api/config'
+import { fetchPostById } from '@/lib/api/endpoints'
 import {
   isCreatePostPathname,
   loginPath,
-  userCreatePostPath,
+  myProfilePath,
+  createPostPath,
   userProfileEditPath,
 } from '@/lib/routes'
 import { cn } from '@/lib/utils'
@@ -86,12 +88,39 @@ export function NavBar({ activeTab, onTabChange }: NavBarProps) {
   const isNearby = pathname === '/nearby'
   const postRouteMatch = useMatch({ path: '/post/:postId', end: true })
   const postId = postRouteMatch?.params.postId
-  const postForNav = postId ? posts.find((p) => p.id === postId) : undefined
-  const postAuthor = postForNav ? resolveUser(postForNav.userId) : undefined
+  const [postNavAuthorName, setPostNavAuthorName] = useState('')
 
+  useEffect(() => {
+    const useApi = isApiEnabled()
+    if (!useApi || !postId) {
+      setPostNavAuthorName('')
+      return
+    }
+    let cancelled = false
+    fetchPostById(postId)
+      .then((sp) => {
+        if (!cancelled) setPostNavAuthorName(sp.author.name)
+      })
+      .catch(() => {
+        if (!cancelled) setPostNavAuthorName('')
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [postId])
+
+  const myAccountMatch = useMatch({ path: '/user', end: true })
+  const createPostWizardMatch = useMatch({ path: '/user/create-post', end: false })
+  const onLegacyCreatePost = /^\/user\/[^/]+\/create-post(?:\/|$)/.test(pathname)
   const userRouteMatch = useMatch({ path: '/user/:userId', end: true })
-  const routeUserId = userRouteMatch?.params.userId
+  const routeUserId =
+    myAccountMatch || createPostWizardMatch || onLegacyCreatePost
+      ? sessionUserId
+      : userRouteMatch?.params.userId
   const routeProfileUser = routeUserId ? resolveUser(routeUserId) : undefined
+  const isProfileRoute = Boolean(
+    myAccountMatch || createPostWizardMatch || onLegacyCreatePost || userRouteMatch,
+  )
 
   const isCreatePostFlow = isCreatePostPathname(pathname)
 
@@ -102,15 +131,17 @@ export function NavBar({ activeTab, onTabChange }: NavBarProps) {
   )
 
   const contextualSearchValue =
-    isAuthenticated && onIndex && activeTab === 'profile'
+    isAuthenticated && myAccountMatch
       ? sessionProfile.name
-      : isAuthenticated && isCreatePostFlow
-        ? `Nova postagem · ${sessionProfile.name}`
-        : postAuthor?.name ?? routeProfileUser?.name ?? ''
+      : isAuthenticated && onIndex && activeTab === 'profile'
+        ? sessionProfile.name
+        : isAuthenticated && isCreatePostFlow
+          ? `Nova postagem · ${sessionProfile.name}`
+          : postNavAuthorName || routeProfileUser?.name || ''
 
   const handleTabClick = (tabId: string) => {
     if (tabId === 'profile') {
-      navigate(`/user/${sessionUserId}`)
+      navigate(myProfilePath())
       return
     }
     if (!onIndex) {
@@ -134,9 +165,11 @@ export function NavBar({ activeTab, onTabChange }: NavBarProps) {
           onClick={() => handleTabClick(tab.id)}
           className={cn(
             tabButtonClass,
-            onIndex && activeTab === tab.id
+            tab.id === 'profile' && isProfileRoute
               ? 'bg-primary/10 text-primary'
-              : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
+              : onIndex && activeTab === tab.id
+                ? 'bg-primary/10 text-primary'
+                : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
           )}
         >
           <tab.icon size={20} className="h-5 w-5 shrink-0 sm:h-4 sm:w-4" aria-hidden />
@@ -145,7 +178,7 @@ export function NavBar({ activeTab, onTabChange }: NavBarProps) {
       ))}
       {isAuthenticated ? (
         <Link
-          to={userCreatePostPath(sessionUserId, 'content')}
+          to={createPostPath('content')}
           className={cn(
             tabButtonClass,
             isCreatePostFlow

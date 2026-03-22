@@ -1,4 +1,4 @@
-import { IsEmail, IsOptional, IsString, MaxLength, MinLength, Matches } from 'class-validator'
+import { IsEmail, IsOptional, IsString, Matches, MaxLength, MinLength, ValidateIf } from 'class-validator'
 
 export class RegisterDto {
   @IsString()
@@ -18,7 +18,9 @@ export class RegisterDto {
   password!: string
 
   @IsOptional()
-  @IsEmail()
+  @IsString()
   @MaxLength(254)
+  @ValidateIf((_, v) => typeof v === 'string' && v.trim().length > 0)
+  @IsEmail({}, { message: 'email inválido' })
   email?: string
 }

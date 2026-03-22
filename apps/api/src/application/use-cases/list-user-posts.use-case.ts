@@ -1,12 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import type { SocialPost } from '../../types/socialPost.types'
-import type { FixtureReadModelPort } from '../ports/fixture-read-model.port'
-import { FIXTURE_READ_MODEL_PORT } from '../ports/fixture-read-model.token'
-import { socialPostFromPrisma } from '../mappers/prisma-post.mapper'
-import { orderPostsForFeed } from '../../infrastructure/fixtures/feedOrder'
-import { postsByAuthorOrdered } from '../mappers/profile.mappers'
+import { socialPostFromPrisma, userIdsForPostScores, type PostWithFeedRelations } from '../mappers/prisma-post.mapper'
+import { orderPostsForFeed } from '../shared/feed-order'
 import { clampLimit, paginateByIndex, type PaginatedResult } from '../shared/pagination'
 import { PrismaService } from '../../infrastructure/prisma/prisma.service'
+import { SocialScoreService } from '../../infrastructure/prisma/social-score.service'
 
 export interface ListUserPostsInput {
   userId: string
@@ -17,18 +15,12 @@ export interface ListUserPostsInput {
 @Injectable()
 export class ListUserPostsUseCase {
   constructor(
-    @Inject(FIXTURE_READ_MODEL_PORT) private readonly fixtures: FixtureReadModelPort,
     private readonly prisma: PrismaService,
+    private readonly socialScores: SocialScoreService,
   ) {}
 
   async execute(input: ListUserPostsInput): Promise<PaginatedResult<SocialPost> | null> {
-    const h = this.fixtures.getHydrated()
     const lim = clampLimit(input.limit)
-
-    if (h.domain.users.some((u) => u.id === input.userId)) {
-      const ordered = postsByAuthorOrdered(h.socialPosts, input.userId)
-      return paginateByIndex(ordered, input.cursor, lim)
-    }
 
     const exists = await this.prisma.user.findUnique({
       where: { id: input.userId },
@@ -43,13 +35,24 @@ export class ListUserPostsUseCase {
       where: { authorId: input.userId },
       include: {
         media: { orderBy: { position: 'asc' } },
-        comments: { orderBy: { createdAt: 'asc' }, take: 20, include: { author: true } },
+        comments: { orderBy: { createdAt: 'desc' }, take: 20, include: { author: true } },
         ratings: { include: { reviewer: true }, orderBy: { createdAt: 'desc' }, take: 100 },
       },
       orderBy: { createdAt: 'desc' },
     })
 
-    const socialPosts = rows.map((row) => socialPostFromPrisma(row, author, h))
+    const allUserIds = new Set<string>()
+    for (const row of rows) {
+      for (const id of userIdsForPostScores(author, row as PostWithFeedRelations)) {
+        allUserIds.add(id)
+      }
+    }
+    const scoreMap = await this.socialScores.scoresForUserIds([...allUserIds])
+    const getScore = (id: string) => scoreMap.get(id) ?? 4
+
+    const socialPosts = rows.map((row) =>
+      socialPostFromPrisma(row as PostWithFeedRelations, author, getScore),
+    )
     const ordered = orderPostsForFeed(socialPosts)
     return paginateByIndex(ordered, input.cursor, lim)
   }

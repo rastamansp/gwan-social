@@ -1,10 +1,6 @@
 import type { EditorialPost, Post, UserProfile } from '@/data/legacyFeed.types'
-import type { FixtureDomain, FixtureUser } from '@/data/fixtures/fixtureDomain.types'
 import type { SocialAuthor, SocialPost } from '@/data/socialPost.types'
-import { fixtures } from '@/data/fixtures/loadFixtures'
-
-const { main: IMG_MAIN, side: IMG_SIDE, avatarFallback: AVATAR_FALLBACK } =
-  fixtures.ui.fallbackEditorialImages
+import { AVATAR_FALLBACK } from '@/data/ui-constants'
 
 export function scoreToTier(score: number): UserProfile['tier'] {
   if (score >= 4.5) return 'elite'
@@ -13,7 +9,39 @@ export function scoreToTier(score: number): UserProfile['tier'] {
   return 'low'
 }
 
-/** ISO → texto relativo simples (mock UI). */
+/** Texto da linha “N pessoa(s) avaliaram esta foto” (sidebar do post). */
+export function ratingsCountLabelPt(count: number): string {
+  const n = Math.max(0, Math.floor(Number(count)))
+  if (n === 1) return '1 pessoa avaliou esta foto'
+  return `${n} pessoas avaliaram esta foto`
+}
+
+/** ISO → «20 de março às 16:00» (hora local do dispositivo). */
+export function formatPublishedDateTimePt(iso: string): string {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ''
+  const monthsPt = [
+    'janeiro',
+    'fevereiro',
+    'março',
+    'abril',
+    'maio',
+    'junho',
+    'julho',
+    'agosto',
+    'setembro',
+    'outubro',
+    'novembro',
+    'dezembro',
+  ] as const
+  const day = d.getDate()
+  const month = monthsPt[d.getMonth()]
+  const hh = String(d.getHours()).padStart(2, '0')
+  const mm = String(d.getMinutes()).padStart(2, '0')
+  return `${day} de ${month} às ${hh}:${mm}`
+}
+
+/** ISO → texto relativo simples (UI). */
 export function formatRelativeTime(iso: string): string {
   const d = new Date(iso)
   const diff = Date.now() - d.getTime()
@@ -25,12 +53,9 @@ export function formatRelativeTime(iso: string): string {
   return d.toLocaleDateString('pt-BR')
 }
 
-function tripleImages(sp: SocialPost): [string, string, string] {
-  const urls = sp.media.filter((m) => m.type === 'image').map((m) => m.url)
-  const a = urls[0] ?? IMG_MAIN
-  const b = urls[1] ?? urls[0] ?? IMG_SIDE
-  const c = urls[2] ?? urls[1] ?? urls[0] ?? IMG_SIDE
-  return [a, b, c]
+/** URLs reais das imagens do post (ordem de `media`); sem padding com a mesma URL. */
+function editorialImageUrls(sp: SocialPost): string[] {
+  return sp.media.filter((m) => m.type === 'image' && m.url.trim()).map((m) => m.url)
 }
 
 export function socialPostToEditorial(sp: SocialPost): EditorialPost {
@@ -38,7 +63,7 @@ export function socialPostToEditorial(sp: SocialPost): EditorialPost {
   const comments =
     sp.commentsPreview.length > 0
       ? sp.commentsPreview.map((c) => ({ author: c.author.name, text: c.text }))
-      : [{ author: 'Comunidade', text: 'Ainda sem comentários neste mock.' }]
+      : [{ author: 'Comunidade', text: 'Ainda sem comentários.' }]
 
   const peopleLabel =
     sp.people.length > 0
@@ -47,13 +72,15 @@ export function socialPostToEditorial(sp: SocialPost): EditorialPost {
 
   return {
     id: sp.id,
+    authorUserId: sp.author.id,
     user: {
       name: sp.author.name,
       rating: sp.author.score.toFixed(3),
-      avatar: sp.author.avatarUrl || AVATAR_FALLBACK,
+      avatar: sp.author.avatarUrl?.trim() || AVATAR_FALLBACK,
     },
-    title: sp.title,
-    images: tripleImages(sp),
+    content: sp.content,
+    images: editorialImageUrls(sp),
+    publishedAtLabel: formatPublishedDateTimePt(sp.createdAt),
     taggedPeople: peopleLabel,
     sideRating: {
       count: sp.stats.ratingsCount,
@@ -77,7 +104,7 @@ export function socialPostToLegacyPost(sp: SocialPost): Post {
   return {
     id: sp.id,
     userId: sp.author.id,
-    content: sp.description,
+    content: sp.content,
     image: sp.media[0]?.url,
     likes: sp.stats.likes,
     timestamp: formatRelativeTime(sp.createdAt),
@@ -93,24 +120,10 @@ export function socialAuthorToUserProfile(a: SocialAuthor): UserProfile {
     avatar: a.avatarUrl || AVATAR_FALLBACK,
     rating: a.score,
     ratingCount: Math.max(50, Math.round(a.score * 420)),
-    bio: a.headline,
+    headline: a.headline ?? '',
+    bio: '',
     tier: scoreToTier(a.score),
   }
-}
-
-/** Utilizador do fixture normalizado → perfil de UI (reputação no contexto `social`). */
-export function userProfileFromFixtureUser(u: FixtureUser, domain: FixtureDomain): UserProfile {
-  const score =
-    domain.userReputationContexts.find((c) => c.userId === u.id && c.contextType === 'social')
-      ?.score ?? 4
-  return socialAuthorToUserProfile({
-    id: u.id,
-    name: u.displayName,
-    username: u.username,
-    avatarUrl: u.avatarUrl,
-    score,
-    headline: u.bio ?? u.headline,
-  })
 }
 
 function collectAuthors(sp: SocialPost): SocialAuthor[] {

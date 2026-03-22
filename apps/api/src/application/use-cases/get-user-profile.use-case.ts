@@ -1,22 +1,20 @@
-import { Inject, Injectable } from '@nestjs/common'
-import type { FixtureReadModelPort } from '../ports/fixture-read-model.port'
-import { FIXTURE_READ_MODEL_PORT } from '../ports/fixture-read-model.token'
-import { publicUser, publicUserFromPrisma, type PublicProfileDto } from '../mappers/profile.mappers'
+import { Injectable } from '@nestjs/common'
 import { PrismaService } from '../../infrastructure/prisma/prisma.service'
+import { SocialScoreService } from '../../infrastructure/prisma/social-score.service'
+import { publicUserFromPrisma, type PublicProfileDto } from '../mappers/profile.mappers'
 
 @Injectable()
 export class GetUserProfileUseCase {
   constructor(
-    @Inject(FIXTURE_READ_MODEL_PORT) private readonly fixtures: FixtureReadModelPort,
     private readonly prisma: PrismaService,
+    private readonly socialScores: SocialScoreService,
   ) {}
 
   async execute(userId: string): Promise<PublicProfileDto | null> {
-    const h = this.fixtures.getHydrated()
-    const fromFixture = publicUser(h, userId)
-    if (fromFixture) return fromFixture
     const user = await this.prisma.user.findUnique({ where: { id: userId } })
     if (!user) return null
-    return publicUserFromPrisma(user, h)
+    const map = await this.socialScores.scoresForUserIds([userId])
+    const socialScore = map.get(userId) ?? 4
+    return publicUserFromPrisma(user, socialScore)
   }
 }

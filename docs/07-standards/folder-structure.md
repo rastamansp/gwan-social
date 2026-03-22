@@ -19,7 +19,7 @@ Definir a **árvore oficial** do repositório: estado **atual** (as-is) e **alvo
 │   └── nginx/
 ├── apps/
 │   ├── web/                     # Vite + React + TS + Tailwind
-│   └── api/                     # NestJS — API read model fixtures (workspace npm "api")
+│   └── api/                     # NestJS — API REST + Prisma (workspace npm "api")
 ├── packages/                    # vazio ou futuro código partilhado
 └── docs/
     ├── assets/                  # imagens README (opcional)
@@ -46,14 +46,14 @@ apps/web/
 │   │   ├── profile/        # ProfileFeedLayout, sidebar, momentos
 │   │   └── social/         # NavBar, FeedPostList, Leaderboard, cartões editoriais
 │   ├── contexts/           # Auth, sessão, rascunho de post
-│   ├── data/               # tipos, adapters; seed único em `fixtures/*.json` (`schemaVersion`)
+│   ├── data/               # tipos, adapters, `ui-constants`; JSON em `fixtures/` só para seed/tooling (`emit:fixtures`)
 │   └── lib/                # navegação, ranking, utilitários
 └── …
 ```
 
 ## `apps/api` (NestJS — as-is)
 
-Clean Architecture enxuta: controladores finos, casos de uso na aplicação, adaptador de fixtures na infraestrutura.
+Clean Architecture enxuta: controladores finos, casos de uso na aplicação, infraestrutura Prisma (e armazenamento público quando aplicável).
 
 ```
 apps/api/
@@ -67,13 +67,14 @@ apps/api/
 │   │       └── v1/             # controllers + ApiV1Module
 │   ├── application/
 │   │   ├── application.module.ts
-│   │   ├── ports/              # FixtureReadModelPort, tokens DI
+│   │   ├── ports/              # portos de aplicação (ex.: storage), tokens DI
 │   │   ├── use-cases/
 │   │   ├── mappers/
 │   │   └── shared/             # paginação (cursor)
 │   ├── infrastructure/
 │   │   ├── infrastructure.module.ts
-│   │   └── fixtures/           # hidratação JSON, FixtureReadModelAdapter
+│   │   ├── prisma/             # PrismaModule, SocialScoreService, …
+│   │   └── storage/            # MinIO / avatar (quando aplicável)
 │   └── types/
 ├── package.json                # nome npm: "api"
 ├── docker-compose.yml          # serviço API isolado (opcional)

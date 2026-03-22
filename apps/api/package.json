@@ -23,6 +23,7 @@
     "@nestjs/schematics": "^11.0.9",
     "@nestjs/testing": "^11.1.17",
     "@types/express": "^5.0.0",
+    "@types/multer": "^2.1.0",
     "@types/node": "^22.10.0",
     "@types/passport-jwt": "^4.0.1",
     "@types/supertest": "^7.2.0",
@@ -32,6 +33,7 @@
     "typescript": "~5.7.2"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1014.0",
     "@nestjs/common": "^11.1.17",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.1.17",
@@ -44,6 +46,7 @@
     "argon2": "^0.41.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.4",
+    "multer": "^2.1.1",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.2",

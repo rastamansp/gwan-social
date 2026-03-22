@@ -8,8 +8,8 @@ import {
   type ReactNode,
 } from 'react'
 import type { UserProfile } from '@/data/legacyFeed.types'
-import { currentUser, users } from '@/data/mockUsers'
 import { scoreToTier } from '@/data/socialPosts.adapters'
+import { AVATAR_FALLBACK } from '@/data/ui-constants'
 import { decodeJwtPayload } from '@/lib/auth/jwtPayload'
 import { getAccessToken } from '@/lib/api/authStorage'
 import { ApiHttpError } from '@/lib/api/client'
@@ -19,10 +19,12 @@ import { mapApiMeUserToProfile } from '@/lib/api/mapApiUserToProfile'
 
 const STORAGE_KEY = 'gwan-social-session-user-overrides-v2'
 
-export type SessionUserOverrides = Partial<Pick<UserProfile, 'name' | 'handle' | 'bio' | 'avatar'>>
+export type SessionUserOverrides = Partial<
+  Pick<UserProfile, 'name' | 'handle' | 'headline' | 'bio' | 'avatar' | 'email'>
+>
 
 type SessionUserContextValue = {
-  /** Utilizador “logado” (mock ou /me) com alterações guardadas localmente. */
+  /** Utilizador “logado” (GET /me) com alterações guardadas localmente. */
   profile: UserProfile
   userId: string
   updateProfile: (patch: SessionUserOverrides) => void
@@ -34,6 +36,21 @@ type SessionUserContextValue = {
 }
 
 const SessionUserContext = createContext<SessionUserContextValue | null>(null)
+
+function profileWithoutApi(): UserProfile {
+  return {
+    id: 'no-api',
+    name: 'Gwan',
+    handle: '@gwan',
+    avatar: AVATAR_FALLBACK,
+    rating: 0,
+    ratingCount: 0,
+    headline: '',
+    bio: '',
+    tier: 'low',
+    email: '',
+  }
+}
 
 function readStoredOverrides(): SessionUserOverrides {
   try {
@@ -56,14 +73,8 @@ function writeStoredOverrides(next: SessionUserOverrides) {
 }
 
 export function SessionUserProvider({ children }: { children: ReactNode }) {
-  const mockBase = useMemo(
-    () => users.find((u) => u.id === currentUser.id) ?? currentUser,
-    [],
-  )
-
   const [apiMeProfile, setApiMeProfile] = useState<UserProfile | null>(null)
   const [directory, setDirectory] = useState<Record<string, UserProfile>>({})
-  /** Re-render quando o token em `localStorage` muda (sem `useAuth` — provider acima). */
   const [authTokenEpoch, setAuthTokenEpoch] = useState(0)
 
   useEffect(() => {
@@ -73,7 +84,10 @@ export function SessionUserProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
-    if (!isApiEnabled()) return
+    if (!isApiEnabled()) {
+      setApiMeProfile(null)
+      return
+    }
     let cancelled = false
 
     const load = () => {
@@ -103,41 +117,44 @@ export function SessionUserProvider({ children }: { children: ReactNode }) {
       cancelled = true
       window.removeEventListener('gwan-auth-changed', load)
     }
-  }, [])
+  }, [authTokenEpoch])
+
+  const accessToken = getAccessToken()
 
   const baseProfile = useMemo((): UserProfile => {
-    if (!isApiEnabled()) return mockBase
-    const token = getAccessToken()
-    if (!token) return mockBase
+    if (!isApiEnabled()) return profileWithoutApi()
+    if (!accessToken) return profileWithoutApi()
     if (apiMeProfile) return apiMeProfile
-    const payload = decodeJwtPayload(token)
+    const payload = decodeJwtPayload(accessToken)
     if (payload?.sub && payload.username) {
       const rating = 0
       return {
         id: payload.sub,
         name: payload.username,
         handle: `@${payload.username}`,
-        avatar: '',
+        avatar: AVATAR_FALLBACK,
         rating,
         ratingCount: 0,
+        headline: '',
         bio: '',
         tier: scoreToTier(rating),
+        email: '',
       }
     }
-    return mockBase
-  }, [mockBase, apiMeProfile, authTokenEpoch])
+    return profileWithoutApi()
+  }, [apiMeProfile, accessToken])
+
   const userId = baseProfile.id
 
   const [overrides, setOverrides] = useState<SessionUserOverrides>(readStoredOverrides)
 
   const profile = useMemo((): UserProfile => {
     const merged = { ...baseProfile, ...overrides } as UserProfile
-    if (
-      isApiEnabled() &&
-      overrides.bio === '' &&
-      baseProfile.bio.trim().length > 0
-    ) {
+    if (isApiEnabled() && overrides.bio === '' && baseProfile.bio.trim().length > 0) {
       merged.bio = baseProfile.bio
+    }
+    if (isApiEnabled() && overrides.headline === '' && baseProfile.headline.trim().length > 0) {
+      merged.headline = baseProfile.headline
     }
     return merged
   }, [baseProfile, overrides])
@@ -169,7 +186,7 @@ export function SessionUserProvider({ children }: { children: ReactNode }) {
   const resolveUser = useCallback(
     (id: string) => {
       if (id === userId) return profile
-      return directory[id] ?? users.find((x) => x.id === id)
+      return directory[id]
     },
     [profile, userId, directory],
   )

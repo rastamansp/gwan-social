@@ -1,8 +1,5 @@
-import { Inject, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import type { ProfileRatedEntry } from '../../types/fixture-types'
-import { getProfileRatedEntriesForReviewee } from '../../infrastructure/fixtures/hydrateFixtures'
-import type { FixtureReadModelPort } from '../ports/fixture-read-model.port'
-import { FIXTURE_READ_MODEL_PORT } from '../ports/fixture-read-model.token'
 import { clampLimit, paginateByIndex, type PaginatedResult } from '../shared/pagination'
 import { PrismaService } from '../../infrastructure/prisma/prisma.service'
 
@@ -12,21 +9,21 @@ export interface ListUserRatingsReceivedInput {
   cursor?: string
 }
 
+function postTitleFromContent(content: string | null | undefined): string | null {
+  if (content == null || !content.trim()) return null
+  const line = content.split('\n').find((l) => l.trim()) ?? content
+  const t = line.trim()
+  return t.length > 120 ? `${t.slice(0, 117)}…` : t
+}
+
 @Injectable()
 export class ListUserRatingsReceivedUseCase {
-  constructor(
-    @Inject(FIXTURE_READ_MODEL_PORT) private readonly fixtures: FixtureReadModelPort,
-    private readonly prisma: PrismaService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  async execute(input: ListUserRatingsReceivedInput): Promise<PaginatedResult<ProfileRatedEntry> | null> {
-    const h = this.fixtures.getHydrated()
+  async execute(
+    input: ListUserRatingsReceivedInput,
+  ): Promise<PaginatedResult<ProfileRatedEntry> | null> {
     const lim = clampLimit(input.limit)
-
-    if (h.domain.users.some((u) => u.id === input.userId)) {
-      const all = getProfileRatedEntriesForReviewee(h.domain, input.userId)
-      return paginateByIndex(all, input.cursor, lim)
-    }
 
     const exists = await this.prisma.user.findUnique({
       where: { id: input.userId },
@@ -34,6 +31,22 @@ export class ListUserRatingsReceivedUseCase {
     })
     if (!exists) return null
 
-    return paginateByIndex([], input.cursor, lim)
+    const all = await this.prisma.rating.findMany({
+      where: { revieweeId: input.userId },
+      orderBy: { createdAt: 'desc' },
+      include: { post: { select: { content: true } } },
+    })
+
+    const entries: ProfileRatedEntry[] = all.map((r) => ({
+      id: r.id,
+      reviewerId: r.reviewerId,
+      stars: Math.min(5, Math.max(1, Math.round(r.value))) as ProfileRatedEntry['stars'],
+      comment: r.comment,
+      postId: r.postId,
+      postTitle: postTitleFromContent(r.post?.content),
+      createdAt: r.createdAt.toISOString(),
+    }))
+
+    return paginateByIndex(entries, input.cursor, lim)
   }
 }

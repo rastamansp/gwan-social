@@ -1,9 +1,13 @@
-import { Inject, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import type { SocialPost } from '../../types/socialPost.types'
-import type { FixtureReadModelPort } from '../ports/fixture-read-model.port'
-import { FIXTURE_READ_MODEL_PORT } from '../ports/fixture-read-model.token'
 import { clampLimit, paginateByIndex, type PaginatedResult } from '../shared/pagination'
-import { type NearbyUi } from '../mappers/profile.mappers'
+import { PrismaService } from '../../infrastructure/prisma/prisma.service'
+import { SocialScoreService } from '../../infrastructure/prisma/social-score.service'
+import {
+  socialPostFromPrisma,
+  userIdsForPostScores,
+  type PostWithFeedRelations,
+} from '../mappers/prisma-post.mapper'
 
 export interface ListNearbyPostsInput {
   limit?: string
@@ -12,21 +16,50 @@ export interface ListNearbyPostsInput {
 
 export type NearbyPostRow = { post: SocialPost; distanceKm: number }
 
+const nearbyInclude = {
+  author: true,
+  media: { orderBy: { position: 'asc' as const } },
+  comments: { orderBy: { createdAt: 'desc' as const }, take: 20, include: { author: true } },
+  ratings: { include: { reviewer: true }, orderBy: { createdAt: 'desc' as const }, take: 100 },
+} as const
+
+/**
+ * Lista posts recentes com `distanceKm` placeholder (sem geolocalização real na BD).
+ */
 @Injectable()
 export class ListNearbyPostsUseCase {
-  constructor(@Inject(FIXTURE_READ_MODEL_PORT) private readonly fixtures: FixtureReadModelPort) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly socialScores: SocialScoreService,
+  ) {}
 
-  execute(input: ListNearbyPostsInput): PaginatedResult<NearbyPostRow> {
-    const h = this.fixtures.getHydrated()
+  async execute(input: ListNearbyPostsInput): Promise<PaginatedResult<NearbyPostRow>> {
     const lim = clampLimit(input.limit)
-    const ui = h.ui as NearbyUi
-    const byId = new Map(h.socialPosts.map((p) => [p.id, p]))
-    const combined = (ui.nearbyPostDistances ?? [])
-      .map(({ postId, distanceKm }) => {
-        const post = byId.get(postId)
-        return post ? { post, distanceKm } : null
-      })
-      .filter((x): x is NearbyPostRow => x != null)
+
+    const rows = await this.prisma.post.findMany({
+      take: 200,
+      orderBy: { createdAt: 'desc' },
+      include: nearbyInclude,
+    })
+
+    const allUserIds = new Set<string>()
+    for (const row of rows) {
+      const { author, ...rest } = row
+      for (const id of userIdsForPostScores(author, rest as PostWithFeedRelations)) {
+        allUserIds.add(id)
+      }
+    }
+    const scoreMap = await this.socialScores.scoresForUserIds([...allUserIds])
+    const getScore = (id: string) => scoreMap.get(id) ?? 4
+
+    const combined: NearbyPostRow[] = rows.map((row, i) => {
+      const { author, ...rest } = row
+      return {
+        post: socialPostFromPrisma(rest as PostWithFeedRelations, author, getScore),
+        distanceKm: Math.round((1 + i * 0.35) * 10) / 10,
+      }
+    })
+
     return paginateByIndex(combined, input.cursor, lim)
   }
 }

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
-import type { UserProfile } from '@/data/mockUsers'
-import { getTierColor, getTierLabel } from '@/data/mockUsers'
+import type { UserProfile } from '@/data/legacyFeed.types'
+import { getTierColor, getTierLabel } from '@/data/user-profile-ui'
 import { StarRating } from '@/components/social/StarRating'
 import { cn } from '@/lib/utils'
 
@@ -62,7 +62,11 @@ export function UserCard({ user, onRate, animationDelay = 0 }: UserCardProps) {
               ({user.ratingCount.toLocaleString()})
             </span>
           </div>
-          <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{user.bio}</p>
+          {[user.headline, user.bio].some((s) => s.trim()) ? (
+            <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
+              {[user.headline, user.bio].map((s) => s.trim()).filter(Boolean).join(' · ')}
+            </p>
+          ) : null}
         </div>
       </div>
     </div>

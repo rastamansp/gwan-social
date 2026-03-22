@@ -1,13 +1,14 @@
 import { useNavigate } from 'react-router-dom'
-import { ImageIcon, MapPin, MessageCircle, Sparkles } from 'lucide-react'
+import { ImageIcon, Sparkles, Trash2 } from 'lucide-react'
 import { useSessionUser } from '@/contexts/SessionUserContext'
-import type { Post } from '@/data/mockUsers'
-import { getSocialPostById } from '@/data/socialPosts.index'
+import type { Post } from '@/data/legacyFeed.types'
 import { cn } from '@/lib/utils'
 
 interface ProfileMomentCardProps {
   post: Post
   animationDelay?: number
+  showDelete?: boolean
+  onDeleteClick?: () => void
 }
 
 function ThumbnailBlock({
@@ -64,21 +65,23 @@ function ThumbnailBlock({
   )
 }
 
-export function ProfileMomentCard({ post, animationDelay = 0 }: ProfileMomentCardProps) {
+export function ProfileMomentCard({
+  post,
+  animationDelay = 0,
+  showDelete = false,
+  onDeleteClick,
+}: ProfileMomentCardProps) {
   const { resolveUser } = useSessionUser()
   const navigate = useNavigate()
-  const social = getSocialPostById(post.id)
   const author = resolveUser(post.userId)
 
-  const fromSocial = social?.media.filter((m) => m.type === 'image').map((m) => m.url) ?? []
-  const imageUrls = fromSocial.length > 0 ? fromSocial : post.image ? [post.image] : []
+  const imageUrls = post.image ? [post.image] : []
 
-  const title =
-    social?.title ??
-    (post.content.length > 96 ? `${post.content.slice(0, 93)}…` : post.content)
-
-  const description = social?.description ?? post.content
-  const isFeatured = social?.type === 'featured_moment'
+  const fullText = post.content
+  const firstLine = (fullText.split('\n').find((l) => l.trim()) ?? fullText).trim()
+  const headline =
+    firstLine.length > 96 ? `${firstLine.slice(0, 93)}…` : firstLine
+  const isFeatured = false
 
   const openPost = () => navigate(`/post/${post.id}`)
 
@@ -94,14 +97,29 @@ export function ProfileMomentCard({ post, animationDelay = 0 }: ProfileMomentCar
       <ThumbnailBlock urls={imageUrls} onOpen={openPost} />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex flex-wrap items-center gap-2">
-          {isFeatured ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-primary/12 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
-              <Sparkles className="h-3 w-3" aria-hidden />
-              Destaque
-            </span>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {isFeatured ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-primary/12 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
+                <Sparkles className="h-3 w-3" aria-hidden />
+                Destaque
+              </span>
+            ) : null}
+            <span className="text-xs text-neutral-500">{post.timestamp}</span>
+          </div>
+          {showDelete && onDeleteClick ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                onDeleteClick()
+              }}
+              className="rounded-full p-2 text-neutral-400 transition hover:bg-destructive/10 hover:text-destructive"
+              aria-label="Apagar publicação"
+            >
+              <Trash2 className="h-4 w-4" aria-hidden />
+            </button>
           ) : null}
-          <span className="text-xs text-neutral-500">{post.timestamp}</span>
         </div>
 
         <h3 className="mt-2 font-display text-lg font-medium leading-snug text-neutral-900">
@@ -110,56 +128,19 @@ export function ProfileMomentCard({ post, animationDelay = 0 }: ProfileMomentCar
             onClick={openPost}
             className="text-left transition hover:text-primary hover:underline decoration-primary/30 underline-offset-2"
           >
-            {title}
+            {headline}
           </button>
         </h3>
 
-        <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-neutral-600">{description}</p>
-
-        {social?.location?.name ? (
-          <p className="mt-2 flex items-center gap-1.5 text-xs text-neutral-500">
-            <MapPin className="h-3.5 w-3.5 shrink-0 text-neutral-400" aria-hidden />
-            <span>
-              {social.location.name}
-              {social.location.city ? ` · ${social.location.city}` : ''}
-            </span>
-          </p>
-        ) : null}
-
-        {social?.tags && social.tags.length > 0 ? (
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {social.tags.slice(0, 5).map((tag) => (
-              <span
-                key={tag}
-                className="rounded-full bg-stone-100 px-2 py-0.5 text-[11px] font-medium text-neutral-600 ring-1 ring-stone-200/80"
-              >
-                #{tag}
-              </span>
-            ))}
-          </div>
-        ) : null}
+        <p className="mt-2 line-clamp-3 whitespace-pre-wrap text-sm leading-relaxed text-neutral-600">
+          {fullText}
+        </p>
 
         <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-stone-200/80 pt-3 text-xs text-neutral-500">
           <span className="font-display tabular-nums text-neutral-800">
-            ★ {social ? social.ratings.average.toFixed(1) : post.rating.toFixed(1)}
-            {social ? (
-              <span className="ml-1 font-sans font-normal text-neutral-500">
-                ({social.stats.ratingsCount} avaliações)
-              </span>
-            ) : null}
+            ★ {post.rating.toFixed(1)}
           </span>
-          {social ? (
-            <>
-              <span className="tabular-nums">{social.stats.likes.toLocaleString()} gostos</span>
-              <span className="flex items-center gap-1 tabular-nums">
-                <MessageCircle className="h-3.5 w-3.5" aria-hidden />
-                {social.stats.comments} comentários
-              </span>
-              <span className="tabular-nums">{social.stats.views.toLocaleString()} vistas</span>
-            </>
-          ) : (
-            <span className="tabular-nums">{post.likes.toLocaleString()} gostos</span>
-          )}
+          <span className="tabular-nums">{post.likes.toLocaleString()} gostos</span>
         </div>
 
         <div className="mt-3">

@@ -16,6 +16,7 @@ import type {
   FixtureRating,
   FixtureUser,
 } from '@/data/fixtures/fixtureDomain.types'
+import { mergedPostBody } from '@/lib/merge-post-body'
 
 /** Fixture bruto v1 (antes da normalização). */
 export interface LegacyGwanSocialFixtureV1 {
@@ -97,7 +98,7 @@ function commentsPreviewForPost(
 ): SocialCommentPreview[] {
   const list = domain.comments
     .filter((c) => c.postId === postId)
-    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
   return list.map((c) => {
     const u = userById.get(c.authorId)
     if (!u) {
@@ -212,12 +213,16 @@ function buildSocialPost(
     .map((m) => ({ id: m.id, type: m.type, url: m.url, alt: m.alt }))
 
   const snap = domain.postEngagementSnapshots?.[post.id]
+  const content = mergedPostBody({
+    content: post.content,
+    title: post.title,
+    description: post.description,
+  })
 
   return {
     id: post.id,
     type: post.type,
-    title: post.title,
-    description: post.description,
+    content,
     createdAt: post.createdAt,
     visibility: post.visibility,
     category: post.category,
@@ -246,13 +251,20 @@ function profileRatedEntriesFromDomain(
     .map((r) => {
       const stars = Math.min(5, Math.max(1, Math.round(r.value))) as ProfileRatedEntry['stars']
       const post = r.postId ? postsById.get(r.postId) : undefined
+      const postTitle = post
+        ? mergedPostBody({
+            content: post.content,
+            title: post.title,
+            description: post.description,
+          }).split('\n')[0]?.slice(0, 120) ?? null
+        : null
       return {
         id: r.id,
         reviewerId: r.reviewerId,
         stars,
         comment: r.comment,
         postId: r.postId,
-        postTitle: post?.title ?? null,
+        postTitle,
         createdAt: r.createdAt,
       }
     })
@@ -323,12 +335,14 @@ export function legacyV1ToDomain(legacy: LegacyGwanSocialFixtureV1): FixtureDoma
       }
     }
 
+    const legacyBody = mergedPostBody(
+      sp as SocialPost & { title?: string; description?: string },
+    )
     posts.push({
       id: sp.id,
       authorId: sp.author.id,
       type: sp.type,
-      title: sp.title,
-      description: sp.description,
+      content: legacyBody,
       createdAt: sp.createdAt,
       visibility: sp.visibility,
       category: sp.category,

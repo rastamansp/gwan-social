@@ -16,6 +16,7 @@ export default function RegisterPage() {
 
   const [name, setName] = useState('')
   const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [acceptedTerms, setAcceptedTerms] = useState(false)
@@ -61,8 +62,8 @@ export default function RegisterPage() {
       title="Criar conta"
       subtitle={
         apiMode
-          ? 'Preenche os dados. O registo chama a API Nest (POST /auth/register) e grava na base PostgreSQL. Utilizador: min. 3 caracteres (a-z, 0-9, _). Senha: min. 8 caracteres.'
-          : 'Preenche os dados abaixo. É uma simulação local — sem API. Utilizador: min. 3 caracteres (a-z, 0-9, _).'
+          ? 'Preenche os dados. O registo chama a API Nest (POST /auth/register) e grava na base PostgreSQL. Email opcional. Utilizador: min. 3 caracteres (a-z, 0-9, _). Senha: min. 8 caracteres.'
+          : 'Preenche os dados abaixo. É uma simulação local — sem API. Email opcional. Utilizador: min. 3 caracteres (a-z, 0-9, _).'
       }
       footer={
         <>
@@ -106,6 +107,21 @@ export default function RegisterPage() {
             minLength={3}
             className="mt-1.5 w-full rounded-xl border border-border/80 bg-background px-4 py-2.5 text-sm outline-none ring-primary/20 focus:border-primary/40 focus:ring-2"
             placeholder="ex.: maria_silva"
+          />
+        </div>
+        <div>
+          <label htmlFor={`${formId}-email`} className="text-xs font-medium text-muted-foreground">
+            Email <span className="font-normal text-muted-foreground/80">(opcional)</span>
+          </label>
+          <input
+            id={`${formId}-email`}
+            type="email"
+            name="email"
+            autoComplete="email"
+            value={email}
+            onChange={(ev) => setEmail(ev.target.value)}
+            className="mt-1.5 w-full rounded-xl border border-border/80 bg-background px-4 py-2.5 text-sm outline-none ring-primary/20 focus:border-primary/40 focus:ring-2"
+            placeholder="ex.: nome@exemplo.com"
           />
         </div>
         <div>

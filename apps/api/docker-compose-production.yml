@@ -31,6 +31,13 @@ services:
       CORS_ORIGINS: "${CORS_ORIGINS:?Defina CORS_ORIGINS}"
       PUBLIC_API_URL: "https://${GWAN_SOCIAL_API_HOST:-api.social.gwan.com.br}"
       AUTH_FIXTURE_ME_FALLBACK: ${AUTH_FIXTURE_ME_FALLBACK:-false}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-}
+      MINIO_PORT: ${MINIO_PORT:-443}
+      MINIO_USE_SSL: ${MINIO_USE_SSL:-true}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-}
+      MINIO_BUCKET: ${MINIO_BUCKET:-}
+      MINIO_PUBLIC_BASE_URL: ${MINIO_PUBLIC_BASE_URL:-}
     networks:
       - gwan
     labels:

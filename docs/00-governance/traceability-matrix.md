@@ -27,7 +27,7 @@ Ligar **objetivo de negócio** → **módulo / caso de uso** → **dados princip
 
 ## Nota sobre implementação atual
 
-Objetivos de **autenticação** e **perfil editável** têm **cobertura parcial na UI** (`apps/web` com mocks e `localStorage`). **`apps/api`** oferece **apenas leitura** sobre fixtures (demonstração de contrato HTTP/OpenAPI) — **não** satisfaz a coluna “Tecnologia” da matriz para auth nem escritas até existir **`apps/api` + PostgreSQL** (e Redis onde aplicável). Ver [use-cases.md](../04-application-architecture/use-cases.md) (secções *Protótipo web* e *API de demonstração*).
+**Autenticação** e **perfil** têm cobertura em **`apps/api` + PostgreSQL** (registo, login, refresh, `GET/PATCH /me`, avatar) e a **web** consome essas rotas com **`VITE_API_URL`**. Objetivos que exigem **interações obrigatórias antes de avaliar**, **pipeline de reputação assíncrona** e **Redis** continuam **em aberto** na matriz. Ver [use-cases.md](../04-application-architecture/use-cases.md).
 
 ## Manutenção
 

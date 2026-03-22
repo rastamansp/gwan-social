@@ -22,12 +22,14 @@ export function AppShell() {
       return tab
     }
     const userMatch = /^\/user\/([^/]+)\/?$/.exec(pathname)
-    const createMatch = /^\/user\/([^/]+)\/create-post/.exec(pathname)
+    const createOwn = /^\/user\/create-post(?:\/|$)/.test(pathname)
+    const createLegacy = /^\/user\/([^/]+)\/create-post/.exec(pathname)
     const editMatch = /^\/user\/([^/]+)\/edit/.exec(pathname)
     if (
       isAuthenticated &&
       (userMatch?.[1] === sessionUserId ||
-        createMatch?.[1] === sessionUserId ||
+        createOwn ||
+        createLegacy?.[1] === sessionUserId ||
         editMatch?.[1] === sessionUserId)
     ) {
       return 'profile'

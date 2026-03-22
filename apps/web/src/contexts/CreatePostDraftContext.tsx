@@ -9,16 +9,17 @@ import {
 } from 'react'
 
 export type CreatePostDraft = {
-  title: string
-  body: string
+  content: string
   imageUrl: string
+  /** Com API ativa: imagens para `POST /me/posts` (campo multipart `files`, várias). */
+  imageFiles: File[]
   visibility: 'public' | 'followers'
 }
 
 const emptyDraft: CreatePostDraft = {
-  title: '',
-  body: '',
+  content: '',
   imageUrl: '',
+  imageFiles: [],
   visibility: 'public',
 }
 

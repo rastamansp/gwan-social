@@ -12,8 +12,8 @@
 
 **As-is no repositório:**
 
-- **`apps/web`:** SPA (React + Vite), com **dados e autenticação mock** (`localStorage`); **ainda não** consome HTTP da API Nest em fluxos principais.
-- **`apps/api`:** NestJS com **read model** a partir de `gwan-social.fixtures.json` (mesma ideia de hidratação que a web), prefixo REST **`/api/v1`**, **Swagger UI** em `/api/`, **OpenAPI JSON** em `/api/openapi.json`. Existe **schema Prisma + migrations** para PostgreSQL e **seed** a partir dos fixtures ([database-schema-physical.md](03-data-architecture/database-schema-physical.md)); os casos de uso HTTP continuam a ler o JSON até migração para repositórios SQL. Sem Redis, filas nem autenticação real.
+- **`apps/web`:** SPA (React + Vite); **requer `VITE_API_URL`** (ex. `http://localhost:4000/api/v1`) para feed, perfil, post, próximo, pessoas e ranking (dados via HTTP + PostgreSQL). Sessão com JWT em `localStorage`. Sem API configurada, as páginas mostram mensagem para definir a variável — **não** há bundle de fixtures em runtime.
+- **`apps/api`:** NestJS com **casos de uso em Prisma/PostgreSQL**, prefixo REST **`/api/v1`**, **Swagger UI** em `/api/`, **OpenAPI JSON** em `/api/openapi.json`. **Seed** opcional a partir de `gwan-social.fixtures.json` ([database-schema-physical.md](03-data-architecture/database-schema-physical.md)); o ficheiro JSON **não** é read model em runtime na API. Sem Redis nem filas na app.
 - **Ainda ausentes:** `apps/worker-python`, `apps/mobile`, stack M1 completa (Compose com Postgres + Redis + worker), `packages/*` alvo.
 
 **Docker atual:** build estático da web + **Nginx** — [docker-compose.yml](../docker-compose.yml) (porta local) e [docker-compose-production.yml](../docker-compose-production.yml) (Traefik / rede externa `gwan`). Existe também [apps/api/docker-compose.yml](../apps/api/docker-compose.yml) para a **API** isolada (porta host por omissão **4000**). Nenhum destes substitui o alvo M1 de Compose unificado com API, worker e bases de dados.

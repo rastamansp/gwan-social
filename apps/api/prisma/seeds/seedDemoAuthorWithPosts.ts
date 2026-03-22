@@ -20,6 +20,11 @@ const DEMO_POST_B = 'cafebabe-2222-4222-8222-222222222222'
 const DEMO_MEDIA_A = 'cafebabe-3333-4333-8333-333333333331'
 const DEMO_MEDIA_B = 'cafebabe-3333-4333-8333-333333333332'
 
+const DEMO_CONTENT_A =
+  'Primeira postagem (seed)\n\nTexto vindo do seed Prisma — autor só existe na base de dados.'
+const DEMO_CONTENT_B =
+  'Momento em destaque (seed)\n\nSegundo post do utilizador demo; pode abrir em /post/:id.'
+
 /** Amizades `accepted` com utilizadores do fixture (seed principal já os criou em `users`). */
 const DEMO_AUTHOR_FRIEND_IDS = ['user_001', 'user_002', 'user_003', 'user_004', 'user_005'] as const
 
@@ -58,8 +63,7 @@ export async function seedDemoAuthorWithPosts(prisma: PrismaClient): Promise<voi
       id: DEMO_POST_A,
       authorId: DEMO_AUTHOR_USER_ID,
       type: 'feed_post',
-      title: 'Primeira postagem (seed)',
-      description: 'Texto vindo do seed Prisma — autor só existe na base de dados.',
+      content: DEMO_CONTENT_A,
       createdAt: new Date(isoA),
       visibility: 'public',
       category: 'moments',
@@ -71,8 +75,7 @@ export async function seedDemoAuthorWithPosts(prisma: PrismaClient): Promise<voi
     update: {
       authorId: DEMO_AUTHOR_USER_ID,
       type: 'feed_post',
-      title: 'Primeira postagem (seed)',
-      description: 'Texto vindo do seed Prisma — autor só existe na base de dados.',
+      content: DEMO_CONTENT_A,
       createdAt: new Date(isoA),
       visibility: 'public',
       category: 'moments',
@@ -88,8 +91,7 @@ export async function seedDemoAuthorWithPosts(prisma: PrismaClient): Promise<voi
       id: DEMO_POST_B,
       authorId: DEMO_AUTHOR_USER_ID,
       type: 'featured_moment',
-      title: 'Momento em destaque (seed)',
-      description: 'Segundo post do utilizador demo; pode abrir em /post/:id.',
+      content: DEMO_CONTENT_B,
       createdAt: new Date(isoB),
       visibility: 'public',
       category: 'photos',
@@ -105,8 +107,7 @@ export async function seedDemoAuthorWithPosts(prisma: PrismaClient): Promise<voi
     update: {
       authorId: DEMO_AUTHOR_USER_ID,
       type: 'featured_moment',
-      title: 'Momento em destaque (seed)',
-      description: 'Segundo post do utilizador demo; pode abrir em /post/:id.',
+      content: DEMO_CONTENT_B,
       createdAt: new Date(isoB),
       visibility: 'public',
       category: 'photos',

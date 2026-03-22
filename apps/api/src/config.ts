@@ -1,17 +1,3 @@
-import * as path from 'node:path'
-
-/** Caminho default ao JSON da web (compilado em `dist/`, dois níveis acima = `apps/api`). */
-export function defaultFixturesPath(): string {
-  return path.join(__dirname, '..', '..', 'web', 'src', 'data', 'fixtures', 'gwan-social.fixtures.json')
-}
-
-export function resolveFixturesPath(cwd: string, envPath?: string): string {
-  if (envPath?.trim()) {
-    return path.resolve(cwd, envPath.trim())
-  }
-  return defaultFixturesPath()
-}
-
 export function parsePort(portEnv?: string): number {
   const p = Number.parseInt(portEnv ?? '4000', 10)
   return Number.isFinite(p) && p > 0 ? p : 4000

@@ -1,14 +1,10 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
-import { FIXTURE_READ_MODEL_PORT } from '../application/ports/fixture-read-model.token'
-import { FixtureReadModelAdapter } from './fixtures/fixture-read-model.adapter'
+import { MinioPublicStorageService } from './storage/minio-public-storage.service'
 
 @Module({
   imports: [ConfigModule],
-  providers: [
-    FixtureReadModelAdapter,
-    { provide: FIXTURE_READ_MODEL_PORT, useExisting: FixtureReadModelAdapter },
-  ],
-  exports: [FIXTURE_READ_MODEL_PORT, FixtureReadModelAdapter],
+  providers: [MinioPublicStorageService],
+  exports: [MinioPublicStorageService],
 })
 export class InfrastructureModule {}

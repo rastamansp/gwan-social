@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { ApiRequiredMessage } from '@/components/common/ApiRequiredMessage'
 import { ProfileFeedLayout } from '@/components/profile/ProfileFeedLayout'
 import { FeedPostList } from '@/components/social/FeedPostList'
 import { Leaderboard } from '@/components/social/Leaderboard'
 import { UserCard } from '@/components/social/UserCard'
 import { useAuth } from '@/contexts/AuthContext'
 import { useSessionUser } from '@/contexts/SessionUserContext'
-import { users } from '@/data/mockUsers'
+import { useRegisteredUsersList } from '@/hooks/useRegisteredUsersList'
 import { MAIN_NAV_TABS } from '@/lib/main-nav'
 import { RANKING_MODES, parseRankingMode, type RankingMode } from '@/lib/ranking-modes'
 import { cn } from '@/lib/utils'
@@ -21,6 +22,16 @@ export default function IndexPage() {
     if (t === 'profile' && !isAuthenticated) return 'feed'
     return t
   }, [tabParam, isAuthenticated])
+
+  const {
+    profiles: peopleProfiles,
+    status: peopleStatus,
+    useApi: peopleApi,
+    errorMessage: peopleError,
+    hasMore: peopleHasMore,
+    loadingMore: peopleLoadingMore,
+    loadMore: loadMorePeople,
+  } = useRegisteredUsersList(activeTab === 'pessoas')
 
   useEffect(() => {
     if (tabParam === 'profile' && !isAuthenticated) {
@@ -74,11 +85,41 @@ export default function IndexPage() {
         {activeTab === 'pessoas' && (
           <div className="space-y-3">
             <h2 className="font-display mb-4 animate-fade-up text-xl font-bold">Pessoas</h2>
-            {users.map((user, i) => (
-              <div key={user.id} className="animate-fade-up" style={{ animationDelay: `${i * 80}ms` }}>
-                <UserCard user={resolveUser(user.id) ?? user} animationDelay={0} onRate={() => {}} />
-              </div>
-            ))}
+            <p className="mb-4 text-sm text-muted-foreground">
+              Utilizadores registados na plataforma (ordenados por nome).
+            </p>
+            {!peopleApi ? (
+              <ApiRequiredMessage title="Pessoas" />
+            ) : peopleApi &&
+              peopleProfiles.length === 0 &&
+              peopleStatus !== 'err' &&
+              peopleStatus !== 'ok' ? (
+              <p className="text-sm text-muted-foreground">A carregar utilizadores…</p>
+            ) : peopleStatus === 'err' ? (
+              <p className="text-sm text-destructive">{peopleError}</p>
+            ) : peopleStatus === 'ok' && peopleProfiles.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Ainda não há utilizadores registados.</p>
+            ) : (
+              <>
+                {peopleProfiles.map((user, i) => (
+                  <div key={user.id} className="animate-fade-up" style={{ animationDelay: `${i * 80}ms` }}>
+                    <UserCard user={resolveUser(user.id) ?? user} animationDelay={0} onRate={() => {}} />
+                  </div>
+                ))}
+                {peopleHasMore ? (
+                  <div className="flex justify-center pt-2">
+                    <button
+                      type="button"
+                      disabled={peopleLoadingMore}
+                      onClick={loadMorePeople}
+                      className="rounded-full border border-border bg-card px-5 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50"
+                    >
+                      {peopleLoadingMore ? 'A carregar…' : 'Carregar mais'}
+                    </button>
+                  </div>
+                ) : null}
+              </>
+            )}
           </div>
         )}
 

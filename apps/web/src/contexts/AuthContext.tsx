@@ -8,7 +8,12 @@ import {
   type ReactNode,
 } from 'react'
 import { ApiHttpError } from '@/lib/api/client'
-import { clearAuthTokens, getRefreshToken, setAuthTokens } from '@/lib/api/authStorage'
+import {
+  clearAuthTokens,
+  getAccessToken,
+  getRefreshToken,
+  setAuthTokens,
+} from '@/lib/api/authStorage'
 import { isApiEnabled } from '@/lib/api/config'
 import { fetchLogin, fetchLogout, fetchRegister } from '@/lib/api/endpoints'
 
@@ -101,7 +106,7 @@ function validatePasswordRegister(password: string, apiMode: boolean) {
 type AuthContextValue = AuthState & {
   login: (username: string, password: string) => Promise<void>
   logout: () => void
-  register: (name: string, username: string, password: string) => Promise<void>
+  register: (name: string, username: string, password: string, email?: string) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -128,12 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         writeStored(next)
         return
       } catch (err) {
-        if (u === DEMO_TEST_USER && password === DEMO_TEST_PASSWORD) {
-          const next: AuthState = { isAuthenticated: true, username: DEMO_TEST_USER }
-          setState(next)
-          writeStored(next)
-          return
-        }
+        // Com API ativa, nunca fazer login “mock”: sem tokens o Bearer não é enviado (ex. DELETE /posts).
         throw new Error(toUserMessage(err))
       }
     }
@@ -179,6 +179,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('gwan-session-invalid', onSessionInvalid)
   }, [logout])
 
+  /** Sessão antiga: flag autenticado sem access token (ex. login com fallback removido). Força novo login. */
+  useEffect(() => {
+    if (!isApiEnabled()) return
+    const s = readStored()
+    if (s.isAuthenticated && !getAccessToken()) {
+      clearAuthTokens()
+      const next: AuthState = { isAuthenticated: false, username: null }
+      setState(next)
+      writeStored(next)
+    }
+  }, [])
+
   useEffect(() => {
     const onProfileUpdated = (e: Event) => {
       const ce = e as CustomEvent<{ username?: string }>
@@ -195,7 +207,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('gwan-profile-updated', onProfileUpdated)
   }, [])
 
-  const register = useCallback(async (name: string, username: string, password: string) => {
+  const register = useCallback(async (name: string, username: string, password: string, emailRaw?: string) => {
     const n = name.trim()
     if (n.length < 2) {
       throw new Error('O nome deve ter pelo menos 2 caracteres.')
@@ -204,13 +216,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const apiMode = isApiEnabled()
     validatePasswordRegister(password, apiMode)
 
+    const emailTrim = emailRaw?.trim() ?? ''
+    if (emailTrim && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrim)) {
+      throw new Error('Indica um email válido ou deixa o campo em branco.')
+    }
+
     if (u === DEMO_TEST_USER) {
       throw new Error(`O utilizador "${DEMO_TEST_USER}" é reservado para a conta de teste. Escolhe outro.`)
     }
 
     if (apiMode) {
       try {
-        const tokens = await fetchRegister({ displayName: n, username: u, password })
+        const tokens = await fetchRegister({
+          displayName: n,
+          username: u,
+          password,
+          ...(emailTrim ? { email: emailTrim.toLowerCase() } : {}),
+        })
         setAuthTokens(tokens)
         const next: AuthState = { isAuthenticated: true, username: u }
         setState(next)

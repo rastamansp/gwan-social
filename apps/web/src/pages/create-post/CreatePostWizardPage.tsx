@@ -1,9 +1,8 @@
-import { Navigate, NavLink, Outlet, useLocation, useParams } from 'react-router-dom'
+import { Navigate, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { PenLine, Image, ClipboardCheck } from 'lucide-react'
 import { CreatePostDraftProvider } from '@/contexts/CreatePostDraftContext'
 import { useAuth } from '@/contexts/AuthContext'
-import { useSessionUser } from '@/contexts/SessionUserContext'
-import { CREATE_POST_STEPS, loginPath } from '@/lib/routes'
+import { CREATE_POST_STEPS, loginPath, myProfilePath } from '@/lib/routes'
 import { cn } from '@/lib/utils'
 
 const steps = [
@@ -13,12 +12,10 @@ const steps = [
 ] as const
 
 function WizardShell() {
-  const { userId = '' } = useParams()
-
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 md:py-10">
       <NavLink
-        to={`/user/${userId}`}
+        to={myProfilePath()}
         className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
         ← Voltar ao teu perfil
@@ -63,17 +60,11 @@ function WizardShell() {
 
 export default function CreatePostWizardPage() {
   const { isAuthenticated } = useAuth()
-  const { userId: sessionUserId } = useSessionUser()
-  const { userId = '' } = useParams()
   const { pathname, search } = useLocation()
 
   if (!isAuthenticated) {
     const from = encodeURIComponent(`${pathname}${search}`)
     return <Navigate to={`${loginPath()}?from=${from}`} replace />
-  }
-
-  if (userId !== sessionUserId) {
-    return <Navigate to={userId ? `/user/${userId}` : '/'} replace />
   }
 
   return (

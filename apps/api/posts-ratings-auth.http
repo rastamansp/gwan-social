@@ -1,0 +1,75 @@
+# Teste: login + avaliar post (Bearer JWT)
+# Requer API em execução: npm run dev:api (porta 4000)
+# Extensão REST Client (VS Code/Cursor): executar blocos na ordem (1 → 2 → 3).
+#
+# --- Curl (bash / Git Bash) — JSON entre aspas simples ---
+# TOKEN=$(curl -s -X POST http://localhost:4000/api/v1/auth/login \
+#   -H "Content-Type: application/json" \
+#   -d '{"username":"tester_http_001","password":"senha_segura_8"}' | jq -r .accessToken)
+# curl -s -w "\nHTTP:%{http_code}\n" \
+#   -X POST http://localhost:4000/api/v1/posts/281d6099-e8b3-4ccc-8313-bfa20ddde529/ratings \
+#   -H "Content-Type: application/json" \
+#   -H "Authorization: Bearer $TOKEN" \
+#   -d '{"value":5}'
+#
+# Sem token (esperado 401):
+# curl -s -w "\nHTTP:%{http_code}\n" -X POST http://localhost:4000/api/v1/posts/281d6099-e8b3-4ccc-8313-bfa20ddde529/ratings \
+#   -H "Content-Type: application/json" -d '{"value":5}'
+#
+# PowerShell: o -d "{\"a\":1}" partilha mal; usa --data-binary @login.json (ver .gitignore: .curl-tmp-*.json).
+#
+# Ajuste credenciais se não tiveres o utilizador `tester_http_001`:
+#   - corre primeiro o registo em gwan-social-api.http, ou
+#   - altera @username / @password abaixo.
+
+@baseUrl = http://localhost:4000
+@api = {{baseUrl}}/api/v1
+
+@username = tester_http_001
+@password = senha_segura_8
+
+# ID do post a avaliar (não podes ser o autor do post)
+@postId = 281d6099-e8b3-4ccc-8313-bfa20ddde529
+
+###############################################################################
+### 1) Login — guarda accessToken para os passos seguintes
+###############################################################################
+# @name loginRatingTest
+POST {{api}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+
+###############################################################################
+### 2) Verificar token (opcional)
+###############################################################################
+# @name meRatingTest
+GET {{api}}/me
+Accept: application/json
+Authorization: Bearer {{loginRatingTest.response.body.accessToken}}
+
+###############################################################################
+### 3) Avaliar post (1–5) — requer Bearer; 403 se fores o autor do post
+###############################################################################
+# @name ratePostTest
+POST {{api}}/posts/{{postId}}/ratings
+Content-Type: application/json
+Authorization: Bearer {{loginRatingTest.response.body.accessToken}}
+
+{
+  "value": 5
+}
+
+###############################################################################
+### 4) Sem autenticação — esperado 401 "Não autenticado" ou "Token inválido"
+###############################################################################
+# @name ratePostNoAuth
+POST {{api}}/posts/{{postId}}/ratings
+Content-Type: application/json
+
+{
+  "value": 5
+}

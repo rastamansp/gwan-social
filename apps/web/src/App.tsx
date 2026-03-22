@@ -7,10 +7,12 @@ import PostPage from '@/pages/PostPage'
 import CreatePostStepConteudo from '@/pages/create-post/CreatePostStepConteudo'
 import CreatePostStepMidia from '@/pages/create-post/CreatePostStepMidia'
 import CreatePostStepRevisao from '@/pages/create-post/CreatePostStepRevisao'
+import { LegacyCreatePostRedirect } from '@/pages/create-post/LegacyCreatePostRedirect'
 import CreatePostWizardPage from '@/pages/create-post/CreatePostWizardPage'
 import EditProfilePage from '@/pages/EditProfilePage'
 import LoginPage from '@/pages/LoginPage'
 import RegisterPage from '@/pages/RegisterPage'
+import MyAccountPage from '@/pages/MyAccountPage'
 import UserProfilePage from '@/pages/UserProfilePage'
 import PresentationPage from '@/pages/PresentationPage'
 
@@ -26,12 +28,14 @@ function App() {
         <Route element={<AppShell />}>
           <Route path="/" element={<IndexPage />} />
           <Route path="/post/:postId" element={<PostPage />} />
-          <Route path="/user/:userId/create-post" element={<CreatePostWizardPage />}>
+          <Route path="/user" element={<MyAccountPage />} />
+          <Route path="/user/create-post" element={<CreatePostWizardPage />}>
             <Route index element={<Navigate to="content" replace />} />
             <Route path="content" element={<CreatePostStepConteudo />} />
             <Route path="media" element={<CreatePostStepMidia />} />
             <Route path="review" element={<CreatePostStepRevisao />} />
           </Route>
+          <Route path="/user/:userId/create-post/*" element={<LegacyCreatePostRedirect />} />
           <Route path="/user/:userId/edit" element={<EditProfilePage />} />
           <Route path="/user/:userId" element={<UserProfilePage />} />
           <Route path="/nearby" element={<NearbyPage />} />

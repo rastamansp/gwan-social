@@ -73,8 +73,7 @@ export interface SocialPersonRef {
 export interface SocialPost {
   id: string
   type: SocialPostType
-  title: string
-  description: string
+  content: string
   createdAt: string
   visibility: SocialPostVisibility
   category: SocialPostCategory

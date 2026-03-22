@@ -1,5 +1,4 @@
 import type { Comment, Post, PostMedia, Rating, User } from '@prisma/client'
-import type { HydratedFixtures } from '../../infrastructure/fixtures/hydrateFixtures'
 import type {
   SocialAuthor,
   SocialCommentPreview,
@@ -19,20 +18,26 @@ export type PostWithFeedRelations = Post & {
   ratings: (Rating & { reviewer: User })[]
 }
 
-function socialScoreForUserId(userId: string, h: HydratedFixtures): number {
-  const ctx = h.domain.userReputationContexts.find(
-    (c) => c.userId === userId && c.contextType === 'social',
-  )
-  return ctx?.score ?? 4
+export type SocialScoreLookup = (userId: string) => number
+
+export function userIdsForPostScores(
+  author: User,
+  row: Pick<PostWithFeedRelations, 'comments' | 'ratings'>,
+): string[] {
+  const ids = new Set<string>()
+  ids.add(author.id)
+  for (const c of row.comments ?? []) ids.add(c.author.id)
+  for (const r of row.ratings ?? []) ids.add(r.reviewer.id)
+  return [...ids]
 }
 
-function socialAuthorFromPrisma(u: User, h: HydratedFixtures): SocialAuthor {
+function socialAuthorFromPrisma(u: User, getScore: SocialScoreLookup): SocialAuthor {
   return {
     id: u.id,
     name: u.displayName,
     username: u.username,
     avatarUrl: u.avatarUrl ?? '',
-    score: socialScoreForUserId(u.id, h),
+    score: getScore(u.id),
     headline: u.headline ?? '',
   }
 }
@@ -64,7 +69,7 @@ function emptyDistribution(): SocialRatingsBlock['distribution'] {
 
 function ratingsBlockFromPrisma(
   ratings: (Rating & { reviewer: User })[],
-  h: HydratedFixtures,
+  getScore: SocialScoreLookup,
 ): SocialRatingsBlock {
   const dist = emptyDistribution()
   let sum = 0
@@ -84,7 +89,7 @@ function ratingsBlockFromPrisma(
   if (pick) {
     latestHighlightedRating = {
       id: pick.id,
-      reviewer: socialAuthorFromPrisma(pick.reviewer, h),
+      reviewer: socialAuthorFromPrisma(pick.reviewer, getScore),
       value: pick.value,
       comment: pick.comment,
       createdAt: pick.createdAt.toISOString(),
@@ -112,21 +117,21 @@ function mediaFromRow(media: PostMedia[]): SocialMedia[] {
 
 function commentsPreviewFromRow(
   comments: (Comment & { author: User })[],
-  h: HydratedFixtures,
+  getScore: SocialScoreLookup,
 ): SocialCommentPreview[] {
   return comments.map((c) => ({
     id: c.id,
-    author: socialAuthorFromPrisma(c.author, h),
+    author: socialAuthorFromPrisma(c.author, getScore),
     text: c.text,
     createdAt: c.createdAt.toISOString(),
   }))
 }
 
-/** Constrói `SocialPost` a partir de uma linha Prisma (perfil / listagens fora dos fixtures). */
+/** Constrói `SocialPost` a partir de uma linha Prisma. */
 export function socialPostFromPrisma(
   row: PostWithFeedRelations,
   author: User,
-  h: HydratedFixtures,
+  getScore: SocialScoreLookup,
 ): SocialPost {
   const ratings = row.ratings ?? []
   const comments = row.comments ?? []
@@ -139,17 +144,16 @@ export function socialPostFromPrisma(
   return {
     id: row.id,
     type: asPostType(row.type),
-    title: row.title,
-    description: row.description,
+    content: row.content,
     createdAt: row.createdAt.toISOString(),
     visibility: asVisibility(row.visibility),
     category: row.category,
     location: parseLocation(row.location),
-    author: socialAuthorFromPrisma(author, h),
+    author: socialAuthorFromPrisma(author, getScore),
     media: mediaFromRow(row.media ?? []),
     stats,
-    ratings: ratingsBlockFromPrisma(ratings, h),
-    commentsPreview: commentsPreviewFromRow(comments, h),
+    ratings: ratingsBlockFromPrisma(ratings, getScore),
+    commentsPreview: commentsPreviewFromRow(comments, getScore),
     tags: parseTags(row.tags),
     people: [] as SocialPersonRef[],
     isTrending: row.isTrending,

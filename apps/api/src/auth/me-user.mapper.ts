@@ -1,6 +1,5 @@
 import type { User } from '@prisma/client'
-import { publicUser } from '../application/mappers/profile.mappers'
-import type { HydratedFixtures } from '../infrastructure/fixtures/hydrateFixtures'
+import { publicUserFromPrisma } from '../application/mappers/profile.mappers'
 
 /** Formato alinhado a `GET /me` / `ApiMeUserDto` na web. */
 export type MeUserJson = {
@@ -13,30 +12,14 @@ export type MeUserJson = {
   socialScore: number
   reputationByContext: Record<string, number>
   handle: string
+  email: string | null
 }
 
-export function buildMeUserDtoFromPrisma(user: User, h: HydratedFixtures): MeUserJson {
-  const pu = publicUser(h, user.id)
-  if (pu) {
-    return {
-      ...pu,
-      username: user.username,
-      displayName: user.displayName,
-      avatarUrl: (user.avatarUrl ?? pu.avatarUrl) ?? '',
-      headline: (user.headline ?? pu.headline) ?? '',
-      bio: user.bio ?? pu.bio ?? null,
-      handle: `@${user.username}`,
-    }
-  }
+export function buildMeUserDtoFromPrisma(user: User, socialScore: number): MeUserJson {
+  const pu = publicUserFromPrisma(user, socialScore)
   return {
-    id: user.id,
-    username: user.username,
-    displayName: user.displayName,
-    avatarUrl: user.avatarUrl ?? '',
-    headline: user.headline ?? '',
-    bio: user.bio ?? null,
-    socialScore: 4,
-    reputationByContext: {},
+    ...pu,
     handle: `@${user.username}`,
+    email: user.email ?? null,
   }
 }

@@ -20,7 +20,7 @@
   <a href="#funcionalidades-atuais">Funcionalidades</a> ·
   <a href="#stack">Stack</a> ·
   <a href="#como-executar">Como executar</a> ·
-  <a href="#api-de-dados-fake">API fake</a> ·
+  <a href="#api-nest">API Nest</a> ·
   <a href="#estrutura-do-monorepo">Estrutura</a> ·
   <a href="#roadmap">Roadmap</a>
 </p>
@@ -33,7 +33,7 @@
 
 **Gwan Social Reputation** explora **reputação por contexto** — não uma “nota social única” que define o valor de uma pessoa. A ideia é considerar dimensões diferentes de interação (convivência, confiança em transações, colaboração, comunidade, etc.) e evoluir para regras de negócio rastreáveis.
 
-O repositório é um **monorepo**; o que roda hoje é a **app web** (React + Vite), com **dados mock** para demonstrar fluxos de produto e UI. A instância pública alvo está em **https://social.gwan.com.br/** (SPA; meta tags Open Graph em `apps/web/index.html` usam esta base para pré-visualizações em redes sociais).
+O repositório é um **monorepo** com **app web** (React + Vite) e **API Nest** (`apps/api`) sobre **PostgreSQL**. A SPA espera **`VITE_API_URL`** apontando para **`/api/v1`** (ex.: `http://localhost:4000/api/v1`); sem isso, os ecrãs sociais mostram instruções para configurar a API. A instância pública alvo está em **https://social.gwan.com.br/** (meta tags Open Graph em `apps/web/index.html`).
 
 O projeto serve para estudar:
 
@@ -46,18 +46,12 @@ O projeto serve para estudar:
 
 Documentação arquitetural e de governança: [`docs/README.md`](docs/README.md).
 
-### Fixtures da app web (`schemaVersion` 2)
+### Ficheiro `gwan-social.fixtures.json` (seed / tooling)
 
-O ficheiro [`apps/web/src/data/fixtures/gwan-social.fixtures.json`](apps/web/src/data/fixtures/gwan-social.fixtures.json) separa:
+O JSON em [`apps/web/src/data/fixtures/gwan-social.fixtures.json`](apps/web/src/data/fixtures/gwan-social.fixtures.json) (`schemaVersion` 2) é **fonte opcional** do **`prisma seed`** na API (`FIXTURES_PATH` ou caminho por omissão em `apps/api/prisma/seeds`). **Não** é carregado pela SPA nem pela API em runtime.
 
-- **`domain`** — modelo normalizado de leitura para o mock: `users`, `posts`, `postMedia`, `postMentions`, `comments`, `ratings`, `friendships`, `interactions`, `userReputationContexts`, e opcionalmente `postEngagementSnapshots` (agregados de feed alinhados ao antigo cartão denormalizado).
-- **`sessionDefaultUserId`**, **`sessionUserProfile`**, **`ui`** — cenário de demo (sessão simulada, estatísticas de cartão de perfil, ordem do feed, distâncias “nearby”, imagens de fallback, etc.), fora do núcleo de domínio.
-
-Em runtime, [`hydrateFixtures.ts`](apps/web/src/data/fixtures/hydrateFixtures.ts) monta o **read model** [`SocialPost`](apps/web/src/data/socialPost.types.ts) e listas de perfil consumidos pelo resto da app. Se ainda tiveres um JSON `schemaVersion: 1`, podes gerar o v2 com:
-
-`npm run emit:fixtures --workspace=web`
-
-Mapeamento futuro sugerido para backend NestJS: módulos `users`, `posts`, `media`, `comments`, `ratings`, `connections`, `interactions`, `reputation`, `feed` (queries / read models).
+- Script **`npm run emit:fixtures --workspace=web`**: migra JSON legado v1 → v2 (usa [`hydrateFixtures.ts`](apps/web/src/data/fixtures/hydrateFixtures.ts) só neste fluxo).
+- UI: imagens de fallback e textos estáticos passaram para [`apps/web/src/data/ui-constants.ts`](apps/web/src/data/ui-constants.ts).
 
 ---
 
@@ -81,7 +75,7 @@ O **Gwan Social** usa isso como gancho, não como cópia: foco em **reputação 
 
 ![Feed principal](./docs/assets/screenshot-home.png)
 
-**Descrição:** feed editorial com cartões estilo *Nosedive*, votação por estrelas (mock) e navegação para o detalhe da postagem. Com **`VITE_API_URL`** definida, o feed pode vir da API **`GET /api/v1/feed`** (ver [integração opcional](#integracao-spa-api)).
+**Descrição:** feed editorial com cartões estilo *Nosedive*, votação por estrelas (demonstração no cliente) e navegação para o detalhe. Dados: **`GET /api/v1/feed`** com **`VITE_API_URL`** (ver [integração SPA ↔ API](#integracao-spa-api)).
 
 ### Meu perfil
 
@@ -93,13 +87,13 @@ O **Gwan Social** usa isso como gancho, não como cópia: foco em **reputação 
 
 ![Ranking](./docs/assets/screenshot-ranking.png)
 
-**Descrição:** lista de **Pessoas** e **Ranking** com critérios (`reputação`, `volume`, `tier`, `engajamento`). Estas abas continuam a usar **fixtures locais** — não há **`GET /users`** na API; ver [limitação](#integracao-spa-api).
+**Descrição:** **Pessoas** e **Ranking** derivam dos **autores do feed** (`GET /feed`) — não há listagem global `GET /users`; ver [integração](#integracao-spa-api).
 
 ### Detalhe da postagem
 
 ![Detalhe da postagem](./docs/assets/screenshot-post.png)
 
-**Descrição:** página `/post/:id` com galeria, comentários e votação (mock).
+**Descrição:** página `/post/:id` com galeria, comentários e votação (dados via **`GET /posts/:id`** com API configurada).
 
 ---
 
@@ -109,13 +103,13 @@ O **Gwan Social** usa isso como gancho, não como cópia: foco em **reputação 
 
 - **Navegação principal** (`/`): abas **Feed**, **Meu perfil**, **Pessoas** e **Ranking** via `?tab=`; a aba perfil exige usuário autenticado (senão volta ao feed).
 - **Feed editorial** (`FeedPostList`): posts ricos, cartão social embutido, link para `/post/:postId`, feedback de voto local.
-- **Próximo** (`/nearby`): experiência de postagens na área (mock + distância); atalho na barra.
-- **Detalhe de post** (`/post/:postId`): layout editorial, galeria, comentários e estrelas (estado local).
-- **Perfil público** (`/user/:userId`): momentos, métricas e ligações a partir do feed.
-- **Criar postagem** (`/user/:userId/create-post`): assistente em passos `content` → `media` → `review` (mock).
-- **Editar perfil** (`/user/:userId/edit`): formulário de demonstração ligado ao contexto de sessão.
-- **Dados HTTP opcionais:** com **`VITE_API_URL`** (ex.: `http://localhost:4000/api/v1`), feed, detalhe de post, próximo, perfil e enriquecimento de sessão via **`GET /me`** usam a API Nest; sem variável ou em erro, mantém-se o comportamento com **fixtures/mocks**.
-- **Autenticação local (sem API transacional):** `/login` e `/register` com persistência em `localStorage`; conta de teste **`demo` / `demo123`**; cadastro de novas contas guardado só no browser.
+- **Próximo** (`/nearby`): **`GET /posts/nearby`** (distância placeholder na API até haver geo real); atalho na barra.
+- **Detalhe de post** (`/post/:postId`): layout editorial; dados **`GET /posts/:id`**; estrelas com estado local (demonstração).
+- **Perfil público** (`/user/:userId`): momentos e separadores via endpoints de utilizador na API.
+- **Criar postagem** (`/user/create-post`): assistente `content` → `media` → `review`; **`POST /me/posts`** (multipart; MinIO se configurado).
+- **Editar perfil** (`/user/:userId/edit`): **`PATCH /me`** alinhado à sessão.
+- **Dados HTTP:** com **`VITE_API_URL`** (ex.: `http://localhost:4000/api/v1`), feed, post, próximo, perfil, pessoas/ranking (a partir do feed) e **`GET /me`** usam a API; sem variável, mensagens pedem configurar a variável — **sem fixtures em bundle**.
+- **Autenticação:** `/login` e `/register` contra **`/auth/*`** quando a API está configurada; tokens em `localStorage`; conta **`demo` / `demo123`** se existir na base (seed).
 - **Sessão e perfil “eu”:** `SessionUserContext` + `AuthContext` para alinhar UI ao usuário autenticado.
 - **Landing institucional** (`/presentation`) fora do shell principal da app.
 - **404** dedicada para rotas desconhecidas dentro da app.
@@ -171,7 +165,7 @@ Parar: `Ctrl+C` ou `docker compose down`.
 | Arquivo | Função |
 |---------|--------|
 | [`docker-compose.yml`](docker-compose.yml) | Serviço `web`, mapeamento de portas |
-| [`apps/api/docker-compose.yml`](apps/api/docker-compose.yml) | Serviço `api` (NestJS + fixtures) |
+| [`apps/api/docker-compose.yml`](apps/api/docker-compose.yml) | Serviço `api` (NestJS + PostgreSQL) |
 | [`docker-compose-production.yml`](docker-compose-production.yml) | Produção com Traefik (rede externa `gwan`) |
 | [`docker/Dockerfile`](docker/Dockerfile) | Multi-stage: dependências → build Vite → Nginx |
 | [`docker/Dockerfile.api`](docker/Dockerfile.api) | Multi-stage: `npm ci` workspaces → build `apps/api` → Node |
@@ -214,13 +208,13 @@ Abre o endereço que o Vite indicar (geralmente **http://localhost:5173**).
 
 <a id="integracao-spa-api"></a>
 
-#### Integração SPA ↔ API (opcional)
+#### Integração SPA ↔ API
 
-- Copiar [`apps/web/.env.example`](apps/web/.env.example) para **`apps/web/.env`** e definir **`VITE_API_URL=http://localhost:4000/api/v1`** — URL base **completa** até `/api/v1` (o código remove barras finais em excesso).
-- Com **`VITE_API_URL` vazia ou ausente**, a app usa **mocks/fixtures** como antes.
-- Com a variável definida e **`npm run dev:api`** noutro terminal, o feed, `/post/:id`, `/nearby`, perfis (`/user/:id` e aba perfil) e dados de sessão alinham-se aos endpoints em **`/api/v1`**; em falha de rede, as vistas mostram estado de erro ou mensagem conforme cada ecrã.
-- **CORS:** a API deve permitir a origem do Vite. Por defeito a API aceita **`http://localhost:5173`**; em Docker usa-se **`CORS_ORIGINS`** (lista separada por vírgulas). Ver [`apps/api/docker-compose.yml`](apps/api/docker-compose.yml).
-- **Pessoas e Ranking:** não existe listagem global de utilizadores na API; as abas **Pessoas** e **Ranking** (`IndexPage` / `Leaderboard`) continuam a usar **dados do fixture** mesmo com a API ativa, até existir um endpoint adequado.
+- Copiar [`apps/web/.env.example`](apps/web/.env.example) para **`apps/web/.env`** e definir **`VITE_API_URL=http://localhost:4000/api/v1`** — URL **completa** até `/api/v1`.
+- Com **`VITE_API_URL` vazia ou ausente**, os ecrãs sociais mostram aviso para configurar a API (sem dados mock em JSON).
+- Com a variável e **`npm run dev:api`**, feed, post, próximo, perfis e sessão usam **`/api/v1`**; falhas de rede mostram erro conforme cada ecrã.
+- **CORS:** origem do Vite em **`CORS_ORIGINS`** — ver [`apps/api/docker-compose.yml`](apps/api/docker-compose.yml).
+- **Pessoas e Ranking:** listas derivadas dos autores do **`GET /feed`** (sem `GET /users` global).
 
 Build local da web:
 
@@ -230,11 +224,11 @@ npm run build:web
 
 Detalhes da pasta `apps/web`: [**apps/web/README.md**](apps/web/README.md).
 
-<a id="api-de-dados-fake"></a>
+<a id="api-nest"></a>
 
-### API de dados fake (NestJS + TypeScript)
+### API Nest (NestJS + PostgreSQL)
 
-A app **`apps/api`** usa **NestJS** e serve o mesmo read model que a web obtém após [`hydrateFixtures.ts`](apps/web/src/data/fixtures/hydrateFixtures.ts), a partir do JSON [`gwan-social.fixtures.json`](apps/web/src/data/fixtures/gwan-social.fixtures.json). Útil para desenvolver integração HTTP antes de backend transacional.
+A app **`apps/api`** usa **NestJS** e **Prisma/PostgreSQL** para feed, utilizadores, posts, auth JWT, etc. O JSON [`gwan-social.fixtures.json`](apps/web/src/data/fixtures/gwan-social.fixtures.json) serve apenas para **`prisma seed`** (opcional).
 
 ```bash
 npm install
@@ -243,7 +237,7 @@ npm run dev:api
 
 - **Dev:** `nest start --watch` (via script `dev` do workspace).
 
-- **Arquitectura (resumo):** `presentation/http/v1` (controladores HTTP), `application` (casos de uso + porto `FixtureReadModelPort` + paginação partilhada), `infrastructure/fixtures` (hidratação JSON + `FixtureReadModelAdapter`). Os casos de uso dependem do porto, não do Nest nem do `fs`.
+- **Arquitectura (resumo):** `presentation/http/v1`, `application` (casos de uso, mappers, paginação), `infrastructure/prisma` (+ storage público quando aplicável).
 
 - **URL base:** `http://localhost:4000` (override com `PORT` no ambiente).
 - **Swagger UI:** **`/api/`** (`/api` redireciona com barra final para os assets). Ex.: [http://localhost:4000/api/](http://localhost:4000/api/). Com o Vite a correr, [http://localhost:5173/api/](http://localhost:5173/api/) também funciona (*proxy* inclui `/api/v1`, `/api/openapi.json` e o UI) — é preciso **`npm run dev:api`** noutro terminal.
@@ -251,9 +245,9 @@ npm run dev:api
 - **Prefixo REST:** `/api/v1` (ex.: `GET /api/v1/health`, `GET /api/v1/feed?limit=5&cursor=…`).
 - **CORS:** por defeito **`http://localhost:5173`** e **`127.0.0.1:5173`**; em Docker usa-se **`CORS_ORIGINS`** (vírgulas). Ver [`apps/api/docker-compose.yml`](apps/api/docker-compose.yml).
 - **`PUBLIC_API_URL`:** opcional; ajusta o campo `servers` no OpenAPI e os links JSON da rota `GET /` (útil atrás de proxy ou outra porta publicada).
-- **Fixture:** caminho absoluto resolvido a partir de `apps/api` para o ficheiro da web; podes sobrescrever com **`FIXTURES_PATH`**. Copia [`apps/api/.env.example`](apps/api/.env.example) para `.env` na pasta da API se quiseres variáveis locais (não commits).
-- **PostgreSQL (Prisma):** define **`DATABASE_URL`** no `.env` da API para migrations e seed; `npm run prisma:migrate` e `npm run prisma:seed` na pasta **`apps/api`** (schema e diagrama ER em [`docs/03-data-architecture/database-schema-physical.md`](docs/03-data-architecture/database-schema-physical.md)). Os endpoints HTTP continuam a usar o read model em JSON até os repositórios passarem a consultar a base.
-- **Autenticação (JWT):** `JWT_SECRET` e tempos em [`apps/api/.env.example`](apps/api/.env.example); rotas `POST /api/v1/auth/register|login|refresh|logout`; `GET /api/v1/me` com `Authorization: Bearer` ou `AUTH_FIXTURE_ME_FALLBACK=true` para demo sem token. Com **`VITE_API_URL`** na web, login/registo usam a API e guardam tokens em `localStorage` (ver [`docs/07-standards/api-standards.md`](docs/07-standards/api-standards.md)).
+- **Seed (fixtures JSON):** opcional via **`FIXTURES_PATH`** ou caminho por omissão para o JSON da web — ver [`apps/api/.env.example`](apps/api/.env.example).
+- **PostgreSQL (Prisma):** **`DATABASE_URL`**, `npm run prisma:migrate` e `npm run prisma:seed` em **`apps/api`** — [database-schema-physical.md](docs/03-data-architecture/database-schema-physical.md).
+- **Autenticação (JWT):** `POST /api/v1/auth/register|login|refresh|logout`; **`GET /api/v1/me`** exige **`Authorization: Bearer`**. Com **`VITE_API_URL`**, a web guarda tokens em `localStorage` — [api-standards.md](docs/07-standards/api-standards.md).
 
 Build da API:
 
@@ -272,7 +266,7 @@ docker compose -f apps/api/docker-compose.yml up --build
 
 - **URL:** `http://localhost:4000` (mapear outra porta com `API_PORT=3001 docker compose -f apps/api/docker-compose.yml up --build`).
 - **CORS:** variável `CORS_ORIGINS` (lista separada por vírgulas); o compose define por defeito Vite (`5173`) e Nginx local da web (`8080`).
-- **Imagem:** [`docker/Dockerfile.api`](docker/Dockerfile.api) — copia o `gwan-social.fixtures.json` para `/data/` dentro do container (`FIXTURES_PATH`).
+- **Imagem:** [`docker/Dockerfile.api`](docker/Dockerfile.api) — build da API; `DATABASE_URL` e segredos via ambiente do compose.
 
 ---
 
@@ -283,7 +277,7 @@ docker compose -f apps/api/docker-compose.yml up --build
 ```
 .
 ├── apps/
-│   ├── api/                 # REST fake a partir dos fixtures (NestJS)
+│   ├── api/                 # NestJS + Prisma / PostgreSQL
 │   └── web/                 # aplicação React + Vite
 ├── docker/                  # Dockerfile web, Dockerfile.api, Nginx
 ├── docs/                    # arquitetura, governança, assets do README
@@ -299,7 +293,7 @@ docker compose -f apps/api/docker-compose.yml up --build
 pages/          # Index, Post, Nearby, Login, Register, EditProfile, wizard create-post, …
 components/     # layout, profile, social (NavBar, FeedPostList, Leaderboard, …)
 contexts/       # Auth, sessão, rascunho de post
-data/           # mocks, tipos, coleção editorial
+data/           # tipos DTO, adapters, ui-constants; fixtures JSON só seed/tooling
 lib/            # navegação, ranking, utilitários
 ```
 
@@ -311,12 +305,12 @@ lib/            # navegação, ranking, utilitários
 |------|-----------|
 | `/` | Feed (`?tab=feed`), **Meu perfil** (`?tab=profile`, autenticado), **Pessoas**, **Ranking** com `?tab=ranking&rank=` (`reputation`, `volume`, `tier`, `engagement`) |
 | `/login` | Entrada (conta demo `demo` / `demo123`) |
-| `/register` | Registo local (mock) |
-| `/nearby` | Postagens próximas (mock ou `GET /api/v1/posts/nearby` se `VITE_API_URL` definida) |
-| `/post/:postId` | Detalhe editorial, estrelas e comentários (mock ou API se `VITE_API_URL` definida) |
-| `/user/:userId` | Perfil público |
-| `/user/:userId/edit` | Editar perfil (mock) |
-| `/user/:userId/create-post` | Wizard: `content`, `media`, `review` |
+| `/register` | Registo via API (`POST /auth/register`) |
+| `/nearby` | `GET /api/v1/posts/nearby` (requer API + sessão) |
+| `/post/:postId` | `GET /api/v1/posts/:postId` |
+| `/user/:userId` | Perfil público (endpoints de utilizador) |
+| `/user/:userId/edit` | Editar perfil (`PATCH /me`) |
+| `/user/create-post` | Wizard: `content`, `media`, `review` (conta autenticada) |
 | `/presentation` | Landing fora do AppShell |
 | `/home` | Redireciona para `/` |
 | `*` | 404 |
@@ -342,16 +336,14 @@ lib/            # navegação, ranking, utilitários
 - [x] Feed editorial, ranking, pessoas, detalhe de post
 - [x] Abas principais na home (`feed`, `profile`, `pessoas`, `ranking`)
 - [x] Login / cadastro / sessão local (demonstração)
-- [x] Editar perfil e wizard de nova postagem (mock)
+- [x] Editar perfil e wizard de nova postagem (API)
 - [x] Docker local + compose de produção (Traefik, variáveis `.env`)
-- [x] API Nest + read model a partir de fixtures; PostgreSQL + Prisma (migrations, seed); autenticação JWT no servidor (`/auth/*`, `/me` com utilizador persistido)
-- [ ] Persistência transacional para feed/posts e restantes leituras ainda servidas pelo JSON de fixtures
-- [ ] Interações registadas como pré-condição para avaliações
-- [ ] Cálculo de reputação contextual no backend
+- [x] API Nest + PostgreSQL (Prisma): feed, posts, perfis, seed opcional a partir do JSON; JWT (`/auth/*`, `/me`)
+- [ ] Interações registadas como pré-condição para avaliações; pipeline de reputação assíncrona e cálculo contextual no backend
 
 ### Próximas evoluções
 
-- [ ] Completar repositórios HTTP em PostgreSQL (substituir read model fixture onde fizer sentido)
+- [ ] Endpoints adicionais (ex.: diretório global de utilizadores, trending server-side)
 - [ ] Workers Python para processamento pesado
 - [ ] Moderação e antifraude
 - [ ] Eventos de domínio

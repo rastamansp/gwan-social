@@ -16,8 +16,8 @@ Definir **fases do MVP** e critérios de pronto para a primeira entrega utilizá
 
 **Notas:**
 
-- **M1:** em paralelo já existe na raiz um Compose que faz apenas **build estático da web + Nginx** (e variante Traefik em produção), e **`apps/api`** com read model de fixtures (Compose opcional em `apps/api/`) — isso **não** cumpre o critério de pronto da M1 (Postgres, Redis, worker, API transacional).
-- **M5:** entrega **incremental** permitida — a primeira onda pode ser **protótipo web com mocks** (ver [project-tasks.md](project-tasks.md)); a linha da tabela permanece válida até `web` e `mobile` consumirem **`/api/v1`**.
+- **M1:** na raiz existe Compose **web + Nginx** (e Traefik em produção); **`apps/api`** com **PostgreSQL** (Compose opcional em `apps/api/`) — o critério de pronto da M1 **completo** ainda exige **Redis + worker** e Compose unificado conforme a tabela.
+- **M5:** a **web** já consome **`/api/v1`** com **`VITE_API_URL`**; falta **mobile** e consolidação de telas alinhadas aos UC.
 
 ## Fora do escopo do MVP
 

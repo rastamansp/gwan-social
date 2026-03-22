@@ -92,7 +92,7 @@ Conforme [mvp-roadmap.md](../06-delivery/mvp-roadmap.md) e [backlog.md](../06-de
 
 **Explícito fora ou adiado no MVP:** moderação completa, apelações, ranking contextual avançado, antifraude ML — preparação conceitual e extensibilidade via worker e dados.
 
-**Estado técnico atual do repositório:** **front-end web** com dados mock e sessão local; **`apps/api`** (NestJS) com **leitura** a partir do mesmo ficheiro de fixtures que alimenta o mock da web — útil para integração HTTP e contrato OpenAPI, **sem** backend transacional nem PostgreSQL/Redis. **Worker Python, mobile e persistência** ainda não implementados — alinhado ao snapshot em [docs/README.md](../README.md).
+**Estado técnico atual do repositório:** **front-end web** com sessão JWT e dados via **`VITE_API_URL`**; **`apps/api`** (NestJS) com **PostgreSQL (Prisma)** para feed, perfis, auth e posts. **Worker Python, Redis em produção e mobile** ainda não implementados — alinhado ao snapshot em [docs/README.md](../README.md). O ficheiro **`gwan-social.fixtures.json`** permanece como **fonte opcional do `prisma seed`**, não como read model em runtime.
 
 ## Comportamento esperado da solução (resumo)
 

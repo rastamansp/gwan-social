@@ -1,5 +1,5 @@
 import { useSessionUser } from '@/contexts/SessionUserContext'
-import { getTierColor, getTierLabel } from '@/data/mockUsers'
+import { getTierColor, getTierLabel } from '@/data/user-profile-ui'
 import { StarRating } from '@/components/social/StarRating'
 import { cn } from '@/lib/utils'
 
