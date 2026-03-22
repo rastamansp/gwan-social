@@ -53,6 +53,7 @@ export function FeedPostList() {
   const [commentText, setCommentText] = useState('')
   const [commentSubmittingPostId, setCommentSubmittingPostId] = useState<string | null>(null)
   const [commentError, setCommentError] = useState<string | null>(null)
+  const [feedActionToast, setFeedActionToast] = useState<string | null>(null)
 
   const [apiItems, setApiItems] = useState<FeedItem[]>([])
   const [apiCursor, setApiCursor] = useState<string | null>(null)
@@ -143,6 +144,7 @@ export function FeedPostList() {
               : it,
           ),
         )
+        setFeedActionToast('Avaliação enviada.')
       } catch (e: unknown) {
         if (e instanceof ApiHttpError) {
           if (e.status === 401) {
@@ -195,6 +197,7 @@ export function FeedPostList() {
         ),
       )
       setCommentDeleteTarget(null)
+      setFeedActionToast('Comentário apagado.')
     } catch (e: unknown) {
       setCommentDeleteError(
         e instanceof ApiHttpError ? e.message : 'Não foi possível apagar o comentário.',
@@ -214,6 +217,12 @@ export function FeedPostList() {
       commentTextareaRef.current?.focus()
     }
   }, [commentOpenPostId, isAuthenticated])
+
+  useEffect(() => {
+    if (!feedActionToast) return
+    const t = window.setTimeout(() => setFeedActionToast(null), 4200)
+    return () => window.clearTimeout(t)
+  }, [feedActionToast])
 
   const submitFeedComment = useCallback(async () => {
     const pid = commentOpenPostId
@@ -239,7 +248,10 @@ export function FeedPostList() {
             : it,
         ),
       )
+      setCommentOpenPostId(null)
       setCommentText('')
+      setCommentError(null)
+      setFeedActionToast('Comentário enviado.')
     } catch (e: unknown) {
       setCommentError(
         e instanceof ApiHttpError ? e.message : 'Não foi possível enviar o comentário.',
@@ -490,6 +502,18 @@ export function FeedPostList() {
           }
         }}
       />
+
+      {feedActionToast ? (
+        <div
+          role="status"
+          aria-live="polite"
+          className="pointer-events-none fixed bottom-6 left-1/2 z-[100] max-w-[min(90vw,24rem)] -translate-x-1/2"
+        >
+          <div className="pointer-events-auto rounded-2xl border border-white/25 bg-neutral-900/95 px-4 py-3 text-center text-sm font-medium text-white shadow-lg ring-1 ring-white/10 backdrop-blur-sm dark:bg-neutral-950/95">
+            {feedActionToast}
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

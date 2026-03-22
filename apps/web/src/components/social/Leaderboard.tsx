@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { UserProfileHoverLink } from '@/components/social/user-tooltip-card'
+import { userProfilePath } from '@/lib/routes'
 import { TrendingDown, TrendingUp, Trophy } from 'lucide-react'
 import { ApiRequiredMessage } from '@/components/common/ApiRequiredMessage'
 import { useSessionUser } from '@/contexts/SessionUserContext'
@@ -100,10 +101,13 @@ export function Leaderboard({ mode }: LeaderboardProps) {
       </div>
       <div className="divide-y divide-border/30">
         {sorted.map((user, i) => (
-          <Link
+          <UserProfileHoverLink
             key={user.id}
-            to={`/user/${user.id}`}
-            className="animate-fade-up flex items-center gap-3 px-5 py-3.5 transition-colors duration-200 hover:bg-muted/50"
+            userId={user.id}
+            to={userProfilePath(user.id)}
+            cachedProfile={user}
+            wrapperClassName="block w-full"
+            className="animate-fade-up flex w-full items-center gap-3 px-5 py-3.5 transition-colors duration-200 hover:bg-muted/50"
             style={{ animationDelay: `${i * 80}ms` }}
           >
             <span className="w-6 text-center font-display text-sm font-bold tabular-nums text-muted-foreground">
@@ -166,7 +170,7 @@ export function Leaderboard({ mode }: LeaderboardProps) {
                 ) : null}
               </div>
             </div>
-          </Link>
+          </UserProfileHoverLink>
         ))}
       </div>
     </div>

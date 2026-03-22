@@ -32,6 +32,7 @@ export default function PostPage() {
   const [commentText, setCommentText] = useState('')
   const [commentSubmitting, setCommentSubmitting] = useState(false)
   const [commentError, setCommentError] = useState<string | null>(null)
+  const [postActionToast, setPostActionToast] = useState<string | null>(null)
 
   useEffect(() => {
     if (!useApi || !postId) {
@@ -77,6 +78,12 @@ export default function PostPage() {
     }
   }, [commentOpen, isAuthenticated])
 
+  useEffect(() => {
+    if (!postActionToast) return
+    const t = window.setTimeout(() => setPostActionToast(null), 4200)
+    return () => window.clearTimeout(t)
+  }, [postActionToast])
+
   const apiLegacyPost: Post | null = useMemo(
     () => (apiSp ? socialPostToLegacyPost(apiSp) : null),
     [apiSp],
@@ -115,6 +122,7 @@ export default function PostPage() {
       const updated = await fetchDeleteComment(postId, commentDeleteTargetId)
       setApiSp(updated)
       setCommentDeleteTargetId(null)
+      setPostActionToast('Comentário apagado.')
     } catch (e: unknown) {
       setCommentDeleteError(
         e instanceof ApiHttpError ? e.message : 'Não foi possível apagar o comentário.',
@@ -178,6 +186,7 @@ export default function PostPage() {
       const updated = await fetchRatePost(postId, v)
       setApiSp(updated)
       setVoteFeedback('Avaliação registada. Obrigado.')
+      setPostActionToast('Avaliação enviada.')
     } catch (e: unknown) {
       if (e instanceof ApiHttpError) {
         if (e.status === 401) {
@@ -215,6 +224,9 @@ export default function PostPage() {
       const updated = await fetchCommentPost(postId, trimmed)
       setApiSp(updated)
       setCommentText('')
+      setCommentOpen(false)
+      setCommentError(null)
+      setPostActionToast('Comentário enviado.')
     } catch (e: unknown) {
       setCommentError(
         e instanceof ApiHttpError ? e.message : 'Não foi possível enviar o comentário.',
@@ -491,6 +503,18 @@ export default function PostPage() {
           }
         }}
       />
+
+      {postActionToast ? (
+        <div
+          role="status"
+          aria-live="polite"
+          className="pointer-events-none fixed bottom-6 left-1/2 z-[100] max-w-[min(90vw,24rem)] -translate-x-1/2"
+        >
+          <div className="pointer-events-auto rounded-2xl border border-white/25 bg-neutral-900/95 px-4 py-3 text-center text-sm font-medium text-white shadow-lg ring-1 ring-white/10 backdrop-blur-sm dark:bg-neutral-950/95">
+            {postActionToast}
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

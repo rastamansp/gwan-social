@@ -1,6 +1,6 @@
 import type { MouseEvent, ReactNode } from 'react'
 import { Trash2 } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { UserProfileHoverLink } from '@/components/social/user-tooltip-card'
 import { formatRelativeTime } from '@/data/socialPosts.adapters'
 import { cn } from '@/lib/utils'
 
@@ -73,7 +73,15 @@ export function CommentPreviewList({
           <div className={cn('text-sm text-nosedive-muted', compact && 'text-xs')}>{emptySlot}</div>
         ) : null
       ) : (
-        <div className={cn('space-y-4 text-nosedive-muted', compact && 'space-y-2 text-sm')}>
+        <div
+          className={cn(
+            'max-h-[min(42vh,20rem)] overflow-y-auto overscroll-y-contain pr-1 sm:max-h-[min(45vh,22rem)]',
+            '[scrollbar-gutter:stable]',
+          )}
+          role="region"
+          aria-label="Lista de comentários"
+        >
+          <div className={cn('space-y-4 text-nosedive-muted', compact && 'space-y-2 text-sm')}>
           {comments.map((c, index) => {
             const isCommentAuthor =
               Boolean(c.authorUserId) && Boolean(currentUserId) && c.authorUserId === currentUserId
@@ -87,13 +95,14 @@ export function CommentPreviewList({
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <div className={cn('font-medium text-nosedive-body', compact && 'text-xs')}>
                     {c.authorUserId ? (
-                      <Link
-                        to={`/user/${c.authorUserId}`}
+                      <UserProfileHoverLink
+                        userId={c.authorUserId}
+                        profileHint={{ name: c.author }}
                         onClick={(e: MouseEvent<HTMLAnchorElement>) => e.stopPropagation()}
                         className="rounded-sm text-inherit outline-none transition hover:text-nosedive-title hover:underline focus-visible:ring-2 focus-visible:ring-nosedive-star/40 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent"
                       >
                         {c.author}
-                      </Link>
+                      </UserProfileHoverLink>
                     ) : (
                       c.author
                     )}
@@ -126,6 +135,7 @@ export function CommentPreviewList({
               </div>
             )
           })}
+          </div>
         </div>
       )}
     </div>

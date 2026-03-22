@@ -1,6 +1,7 @@
 import { useState, type MouseEvent } from 'react'
 import { Heart, MessageCircle, Star } from 'lucide-react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
+import { UserProfileHoverLink } from '@/components/social/user-tooltip-card'
 import { useSessionUser } from '@/contexts/SessionUserContext'
 import type { Post } from '@/data/legacyFeed.types'
 import { StarRating } from '@/components/social/StarRating'
@@ -32,9 +33,11 @@ export function PostCard({ post, animationDelay = 0, className }: PostCardProps)
       )}
       style={{ animationDelay: `${animationDelay}ms` }}
     >
-      <Link
-        to={`/user/${author.id}`}
-        className="mb-3 flex items-center gap-3 rounded-xl outline-none ring-primary/30 transition-colors hover:bg-muted/40 focus-visible:ring-2"
+      <UserProfileHoverLink
+        userId={author.id}
+        cachedProfile={author}
+        wrapperClassName="mb-3 block w-full"
+        className="flex w-full items-center gap-3 rounded-xl outline-none ring-primary/30 transition-colors hover:bg-muted/40 focus-visible:ring-2"
         onClick={(e: MouseEvent) => e.stopPropagation()}
       >
         <img
@@ -52,7 +55,7 @@ export function PostCard({ post, animationDelay = 0, className }: PostCardProps)
           </div>
           <span className="text-xs text-muted-foreground">{post.timestamp}</span>
         </div>
-      </Link>
+      </UserProfileHoverLink>
 
       <p
         className="mb-4 cursor-pointer leading-relaxed text-foreground transition-colors hover:text-primary/80"

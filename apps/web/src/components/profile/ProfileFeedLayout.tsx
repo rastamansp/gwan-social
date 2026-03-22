@@ -21,8 +21,9 @@ import {
 } from '@/lib/api/endpoints'
 import { ApiHttpError } from '@/lib/api/client'
 import { DeletePostConfirmModal } from '@/components/profile/DeletePostConfirmModal'
+import { UserProfileHoverLink } from '@/components/social/user-tooltip-card'
 import { mapApiPublicUserToProfile } from '@/lib/api/mapApiUserToProfile'
-import { createPostPath, loginPath, userProfileEditPath } from '@/lib/routes'
+import { createPostPath, loginPath, userProfileEditPath, userProfilePath } from '@/lib/routes'
 import { cn } from '@/lib/utils'
 
 type ProfileSection = 'moments' | 'photos' | 'rated' | 'friends'
@@ -571,22 +572,29 @@ export function ProfileFeedLayout({ profileUserId, accountMode = false }: Profil
                                 key={entry.id}
                                 className="flex gap-4 rounded-2xl bg-stone-50 p-4 ring-1 ring-black/5"
                               >
-                                <Link to={`/user/${reviewee.id}`} className="shrink-0">
+                                <UserProfileHoverLink
+                                  userId={reviewee.id}
+                                  to={userProfilePath(reviewee.id)}
+                                  cachedProfile={reviewee}
+                                  className="shrink-0"
+                                >
                                   <img
                                     src={reviewee.avatar}
                                     alt=""
                                     className="h-12 w-12 rounded-full object-cover ring-2 ring-white transition hover:opacity-90"
                                   />
-                                </Link>
+                                </UserProfileHoverLink>
                                 <div className="min-w-0 flex-1">
                                   <div className="flex flex-wrap items-baseline justify-between gap-2">
                                     <div>
-                                      <Link
-                                        to={`/user/${reviewee.id}`}
+                                      <UserProfileHoverLink
+                                        userId={reviewee.id}
+                                        to={userProfilePath(reviewee.id)}
+                                        cachedProfile={reviewee}
                                         className="font-medium text-neutral-900 hover:underline"
                                       >
                                         {reviewee.name}
-                                      </Link>
+                                      </UserProfileHoverLink>
                                       <p className="text-xs text-neutral-500">{reviewee.handle}</p>
                                     </div>
                                     <time
@@ -643,22 +651,29 @@ export function ProfileFeedLayout({ profileUserId, accountMode = false }: Profil
                                 key={entry.id}
                                 className="flex gap-4 rounded-2xl bg-stone-50 p-4 ring-1 ring-black/5"
                               >
-                                <Link to={`/user/${reviewer.id}`} className="shrink-0">
+                                <UserProfileHoverLink
+                                  userId={reviewer.id}
+                                  to={userProfilePath(reviewer.id)}
+                                  cachedProfile={reviewer}
+                                  className="shrink-0"
+                                >
                                   <img
                                     src={reviewer.avatar}
                                     alt=""
                                     className="h-12 w-12 rounded-full object-cover ring-2 ring-white transition hover:opacity-90"
                                   />
-                                </Link>
+                                </UserProfileHoverLink>
                                 <div className="min-w-0 flex-1">
                                   <div className="flex flex-wrap items-baseline justify-between gap-2">
                                     <div>
-                                      <Link
-                                        to={`/user/${reviewer.id}`}
+                                      <UserProfileHoverLink
+                                        userId={reviewer.id}
+                                        to={userProfilePath(reviewer.id)}
+                                        cachedProfile={reviewer}
                                         className="font-medium text-neutral-900 hover:underline"
                                       >
                                         {reviewer.name}
-                                      </Link>
+                                      </UserProfileHoverLink>
                                       <p className="text-xs text-neutral-500">{reviewer.handle}</p>
                                     </div>
                                     <time
@@ -734,10 +749,13 @@ export function ProfileFeedLayout({ profileUserId, accountMode = false }: Profil
                 </p>
                 <div className="mt-6 grid gap-4 sm:grid-cols-2">
                   {profileFriends.map((friend) => (
-                    <Link
+                    <UserProfileHoverLink
                       key={friend.id}
-                      to={`/user/${friend.id}`}
-                      className="flex gap-4 rounded-2xl bg-stone-50 p-4 ring-1 ring-black/5 transition hover:ring-neutral-300"
+                      userId={friend.id}
+                      to={userProfilePath(friend.id)}
+                      cachedProfile={friend}
+                      wrapperClassName="block w-full"
+                      className="flex w-full gap-4 rounded-2xl bg-stone-50 p-4 ring-1 ring-black/5 transition hover:ring-neutral-300"
                     >
                       <img
                         src={friend.avatar}
@@ -768,7 +786,7 @@ export function ProfileFeedLayout({ profileUserId, accountMode = false }: Profil
                           </p>
                         ) : null}
                       </div>
-                    </Link>
+                    </UserProfileHoverLink>
                   ))}
                 </div>
               </div>

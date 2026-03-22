@@ -1,10 +1,16 @@
 import type { ReactNode } from 'react'
-import { Link } from 'react-router-dom'
 import type { CommentItem } from '@/components/social/CommentPreviewList'
 import type { EditorialPost } from '@/data/legacyFeed.types'
 import type { RatingSpotlightPerson } from '@/data/socialPosts.index'
 import { UserReputationSidebar } from '@/components/social/UserReputationSidebar'
+import { UserProfileHoverLink } from '@/components/social/user-tooltip-card'
+import { userProfilePath } from '@/lib/routes'
 import { cn } from '@/lib/utils'
+
+function editorialRatingToNumber(rating: string): number {
+  const n = Number.parseFloat(rating.replace(',', '.'))
+  return Number.isFinite(n) ? n : 0
+}
 
 function EditorialImageGrid({ images }: { images: string[] }) {
   const n = images.length
@@ -132,9 +138,17 @@ export function SocialPostCard({
   sidebarCommentsBelowTitleSlot,
   sidebarCommentsTitleTrailing,
 }: SocialPostCardProps) {
-  const authorId = post.authorUserId
+  const authorIdForProfile = postAuthorUserIdProp ?? post.authorUserId ?? null
   const postAuthorUserIdForComments = postAuthorUserIdProp ?? post.authorUserId ?? null
-  const profileHref = authorId ? `/user/${authorId}` : null
+  const profileHref = authorIdForProfile ? userProfilePath(authorIdForProfile) : null
+  const authorProfileHint =
+    authorIdForProfile != null
+      ? {
+          name: post.user.name,
+          avatar: post.user.avatar,
+          rating: editorialRatingToNumber(post.user.rating),
+        }
+      : undefined
 
   const sidebarOnVote = onVote
   const sidebarVoteValue = voteValue
@@ -157,9 +171,11 @@ export function SocialPostCard({
         <div className="grid grid-cols-12 gap-4 sm:gap-6 lg:gap-8 xl:gap-10">
           <div className="col-span-12 lg:col-span-9">
             <header className="mb-4 flex items-start gap-3 sm:mb-6 sm:gap-4">
-              {profileHref ? (
-                <Link
+              {profileHref && authorIdForProfile ? (
+                <UserProfileHoverLink
+                  userId={authorIdForProfile}
                   to={profileHref}
+                  profileHint={authorProfileHint}
                   className="shrink-0 rounded-full outline-none ring-white/60 ring-offset-2 ring-offset-transparent transition hover:opacity-90 focus-visible:ring-2"
                 >
                   <img
@@ -167,7 +183,7 @@ export function SocialPostCard({
                     alt=""
                     className="h-11 w-11 rounded-full border border-white/50 object-cover shadow-md sm:h-14 sm:w-14"
                   />
-                </Link>
+                </UserProfileHoverLink>
               ) : (
                 <img
                   src={post.user.avatar}
@@ -177,15 +193,17 @@ export function SocialPostCard({
               )}
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-1.5 text-nosedive-muted sm:gap-2">
-                  {profileHref ? (
-                    <Link
+                  {profileHref && authorIdForProfile ? (
+                    <UserProfileHoverLink
+                      userId={authorIdForProfile}
                       to={profileHref}
+                      profileHint={authorProfileHint}
                       className="font-display text-lg font-light tracking-tight text-nosedive-muted transition hover:text-nosedive-title hover:underline sm:text-xl md:text-2xl"
                     >
                       <h2 className="inline font-display text-lg font-light tracking-tight sm:text-xl md:text-2xl">
                         {post.user.name}
                       </h2>
-                    </Link>
+                    </UserProfileHoverLink>
                   ) : (
                     <h2 className="font-display text-lg font-light tracking-tight text-nosedive-muted sm:text-xl md:text-2xl">
                       {post.user.name}
